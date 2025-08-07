@@ -67,6 +67,7 @@ jobs:
         with:
           tagName: ${{ steps.version.outputs.version }}
           releaseName: 'Augment Token Manager ${{ steps.version.outputs.version }}'
+          includeUpdaterJson: false
           releaseBody: |
             ## 🚀 Augment Token Manager ${{ steps.version.outputs.version }}
 
