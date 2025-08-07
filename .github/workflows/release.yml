@@ -32,17 +32,18 @@ jobs:
         id: version
         shell: bash
         run: |
-          # 生成基于日期和提交数的版本号（无前导零）
-          YEAR=$(date +'%Y')
-          MONTH=$(date +'%-m')  # 无前导零的月份
-          DAY=$(date +'%-d')    # 无前导零的日期
+          # 生成语义版本号：1.0.BUILD_NUMBER
           COMMIT_COUNT=$(git rev-list --count HEAD)
-          VERSION="v${YEAR}.${MONTH}.${DAY}.${COMMIT_COUNT}"
-          VERSION_NUMBER="${YEAR}.${MONTH}.${DAY}.${COMMIT_COUNT}"
+          DATE=$(date +'%Y%m%d')
+          VERSION="v1.0.${COMMIT_COUNT}"
+          VERSION_NUMBER="1.0.${COMMIT_COUNT}"
+          DISPLAY_VERSION="v${DATE}.${COMMIT_COUNT}"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "version_number=${VERSION_NUMBER}" >> $GITHUB_OUTPUT
+          echo "display_version=${DISPLAY_VERSION}" >> $GITHUB_OUTPUT
           echo "Generated version: ${VERSION}"
-          echo "Version number: ${VERSION_NUMBER}"
+          echo "Cargo version: ${VERSION_NUMBER}"
+          echo "Display version: ${DISPLAY_VERSION}"
 
 
 
@@ -78,10 +79,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ steps.version.outputs.version }}
-          releaseName: 'Augment Token Manager ${{ steps.version.outputs.version }}'
+          releaseName: 'Augment Token Manager ${{ steps.version.outputs.display_version }}'
           includeUpdaterJson: false
           releaseBody: |
-            ## 🚀 Augment Token Manager ${{ steps.version.outputs.version }}
+            ## 🚀 Augment Token Manager ${{ steps.version.outputs.display_version }}
 
             **自动构建版本** - 基于最新代码自动生成
 
