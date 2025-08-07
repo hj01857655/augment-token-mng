@@ -30,6 +30,7 @@ jobs:
 
       - name: Generate version number
         id: version
+        shell: bash
         run: |
           # 生成基于日期和提交数的版本号
           DATE=$(date +'%Y.%m.%d')
