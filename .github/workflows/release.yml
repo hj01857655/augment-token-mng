@@ -91,10 +91,10 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ steps.version.outputs.version }}
-          releaseName: 'Augment Token Manager ${{ steps.version.outputs.display_version }}'
+          releaseName: 'Augment Token Manager ${{ steps.version.outputs.version }}'
           includeUpdaterJson: false
           releaseBody: |
-            ## 🚀 Augment Token Manager ${{ steps.version.outputs.display_version }}
+            ## 🚀 Augment Token Manager ${{ steps.version.outputs.version }}
 
             **自动构建版本** - 基于最新代码自动生成
 
