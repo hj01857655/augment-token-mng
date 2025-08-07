@@ -21,13 +21,11 @@ export default defineConfig(async () => ({
 
   // Build optimizations
   build: {
-    // Enable minification
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
+    // Enable minification with esbuild (faster and no extra dependencies)
+    minify: 'esbuild',
+    // esbuild minify options
+    esbuild: {
+      drop: ['console', 'debugger'],
     },
     // Enable code splitting
     rollupOptions: {
