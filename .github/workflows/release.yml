@@ -32,11 +32,13 @@ jobs:
         id: version
         shell: bash
         run: |
-          # 生成基于日期和提交数的版本号
-          DATE=$(date +'%Y.%m.%d')
+          # 生成基于日期和提交数的版本号（无前导零）
+          YEAR=$(date +'%Y')
+          MONTH=$(date +'%-m')  # 无前导零的月份
+          DAY=$(date +'%-d')    # 无前导零的日期
           COMMIT_COUNT=$(git rev-list --count HEAD)
-          VERSION="v${DATE}.${COMMIT_COUNT}"
-          VERSION_NUMBER="${DATE}.${COMMIT_COUNT}"
+          VERSION="v${YEAR}.${MONTH}.${DAY}.${COMMIT_COUNT}"
+          VERSION_NUMBER="${YEAR}.${MONTH}.${DAY}.${COMMIT_COUNT}"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "version_number=${VERSION_NUMBER}" >> $GITHUB_OUTPUT
           echo "Generated version: ${VERSION}"
