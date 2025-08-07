@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Latest] - Auto Release
+
+### 🐛 Bug Fixes
+- Fixed frontend form validation errors with undefined trim() calls
+- Fixed macOS bundle configuration for proper artifact generation
+- Fixed version number synchronization between Cargo.toml and tauri.conf.json
+- Fixed semantic versioning compliance for Cargo metadata
+
+### 🔧 Improvements
+- Enabled automatic release on every main branch push
+- Added Windows NSIS installer support (.exe format)
+- Simplified macOS builds (removed Linux support)
+- Unified version display format across all releases
+- Enhanced error handling in frontend components
+
+### 🚀 CI/CD Enhancements
+- Implemented automatic version generation based on commit count
+- Added cross-platform build matrix (Windows + macOS)
+- Enabled automatic GitHub Release creation
+- Added comprehensive build artifact uploading
+
 ## [0.1.4] - 2025-01-08
 
 ### 🚀 Performance Improvements
