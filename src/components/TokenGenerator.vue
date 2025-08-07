@@ -153,7 +153,7 @@ const tenantUrlInput = ref(null)
 
 // Computed properties
 const canGetToken = computed(() => {
-  return authUrl.value && authCode.value.trim().length > 0
+  return authUrl.value && (authCode.value || '').trim().length > 0
 })
 
 // Methods
@@ -222,16 +222,16 @@ const openAuthUrlInternal = async () => {
 }
 
 const getAccessToken = async () => {
-  if (!authCode.value.trim()) {
+  if (!(authCode.value || '').trim()) {
     showStatus('请输入授权码', 'error')
     return
   }
-  
+
   isGettingToken.value = true
   showStatus('正在获取Augment访问令牌...', 'info')
-  
+
   try {
-    const result = await invoke('get_augment_token', { code: authCode.value.trim() })
+    const result = await invoke('get_augment_token', { code: (authCode.value || '').trim() })
     tokenResult.value = result
     showStatus('Augment访问令牌获取成功!', 'success')
   } catch (error) {
@@ -262,8 +262,8 @@ const saveAndClose = async () => {
     await invoke('save_token', {
       tenantUrl: tokenResult.value.tenant_url,
       accessToken: tokenResult.value.access_token,
-      portalUrl: portalUrl.value.trim() || null,
-      emailNote: emailNote.value.trim() || null
+      portalUrl: (portalUrl.value || '').trim() || null,
+      emailNote: (emailNote.value || '').trim() || null
     })
     showStatus('Token保存成功!', 'success')
     emit('token-saved')

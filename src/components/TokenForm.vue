@@ -115,8 +115,8 @@ const isLoading = ref(false)
 const isEditing = computed(() => !!props.token)
 
 const isFormValid = computed(() => {
-  return formData.value.tenantUrl.trim() &&
-         formData.value.accessToken.trim() &&
+  return (formData.value.tenantUrl || '').trim() &&
+         (formData.value.accessToken || '').trim() &&
          !errors.value.tenantUrl &&
          !errors.value.accessToken &&
          !errors.value.portalUrl &&
@@ -161,7 +161,7 @@ const validateForm = () => {
   }
 
   // Validate tenant URL
-  if (!formData.value.tenantUrl.trim()) {
+  if (!(formData.value.tenantUrl || '').trim()) {
     errors.value.tenantUrl = '租户URL不能为空'
   } else {
     try {
@@ -172,12 +172,12 @@ const validateForm = () => {
   }
 
   // Validate access token
-  if (!formData.value.accessToken.trim()) {
+  if (!(formData.value.accessToken || '').trim()) {
     errors.value.accessToken = '访问令牌不能为空'
   }
 
   // Validate portal URL (optional)
-  if (formData.value.portalUrl.trim()) {
+  if ((formData.value.portalUrl || '').trim()) {
     try {
       new URL(formData.value.portalUrl)
     } catch {
@@ -201,10 +201,10 @@ const handleSubmit = async () => {
       // Update existing token
       const result = await invoke('update_token', {
         id: props.token.id,
-        tenantUrl: formData.value.tenantUrl.trim(),
-        accessToken: formData.value.accessToken.trim(),
-        portalUrl: formData.value.portalUrl.trim() || null,
-        emailNote: formData.value.emailNote.trim() || null
+        tenantUrl: (formData.value.tenantUrl || '').trim(),
+        accessToken: (formData.value.accessToken || '').trim(),
+        portalUrl: (formData.value.portalUrl || '').trim() || null,
+        emailNote: (formData.value.emailNote || '').trim() || null
       })
 
       if (result) {
@@ -219,10 +219,10 @@ const handleSubmit = async () => {
     } else {
       // Add new token
       const result = await invoke('save_token', {
-        tenantUrl: formData.value.tenantUrl.trim(),
-        accessToken: formData.value.accessToken.trim(),
-        portalUrl: formData.value.portalUrl.trim() || null,
-        emailNote: formData.value.emailNote.trim() || null
+        tenantUrl: (formData.value.tenantUrl || '').trim(),
+        accessToken: (formData.value.accessToken || '').trim(),
+        portalUrl: (formData.value.portalUrl || '').trim() || null,
+        emailNote: (formData.value.emailNote || '').trim() || null
       })
 
       showStatus('Token保存成功!', 'success')
