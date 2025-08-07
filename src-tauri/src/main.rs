@@ -35,6 +35,7 @@ fn create_http_client() -> Client {
 // Global state to store OAuth state and shared resources
 struct AppState {
     augment_oauth_state: Mutex<Option<AugmentOAuthState>>,
+    #[allow(dead_code)]
     http_server: Mutex<Option<HttpServer>>,
     http_client: Arc<Client>,
     cache_manager: Arc<CacheManager>,
