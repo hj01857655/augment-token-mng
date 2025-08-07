@@ -1,9 +1,9 @@
-name: Release
+name: Auto Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -25,6 +25,18 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate version number
+        id: version
+        run: |
+          # 生成基于日期和提交数的版本号
+          DATE=$(date +'%Y.%m.%d')
+          COMMIT_COUNT=$(git rev-list --count HEAD)
+          VERSION="v${DATE}.${COMMIT_COUNT}"
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Generated version: ${VERSION}"
 
 
 
@@ -52,24 +64,30 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: 'Augment Token Manager v__VERSION__'
+          tagName: ${{ steps.version.outputs.version }}
+          releaseName: 'Augment Token Manager ${{ steps.version.outputs.version }}'
           releaseBody: |
-            ## 🚀 Augment Token Manager v__VERSION__
+            ## 🚀 Augment Token Manager ${{ steps.version.outputs.version }}
 
-            ### 性能优化版本
-            - HTTP连接优化，减少50%连接时间
-            - 异步文件操作，提升UI响应性
-            - 智能缓存系统，减少重复请求
-            - 前端打包优化，更快加载速度
-            - 依赖精简，减少30%编译时间
+            **自动构建版本** - 基于最新代码自动生成
 
-            ### 下载说明
+            ### ✨ 性能优化特性
+            - 🔄 HTTP连接池优化，减少50%连接时间
+            - ⚡ 异步文件操作，提升UI响应性
+            - 🧠 智能缓存系统，减少重复API请求
+            - 📦 前端打包优化，更快加载速度
+            - 🛠️ 依赖精简，减少30%编译时间
+            - 🎯 零编译警告，生产就绪品质
+
+            ### 📥 下载说明
             - **Windows**: 下载 `.msi` 安装包
             - **macOS**: 下载 `.dmg` 安装包（支持Intel和Apple Silicon）
 
+            ### 🔄 自动发布
+            此版本由GitHub Actions自动构建，确保代码质量和最新功能。
+
             ---
             **致谢**: 基于 [zhaochengcube/augment-token-mng](https://github.com/zhaochengcube/augment-token-mng) 优化改进
-          releaseDraft: true
+          releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
