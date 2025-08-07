@@ -2,7 +2,7 @@
 name = "augment-token-manager"
 version = "0.1.4"
 description = "Augment Token Manager - 用于生成和管理 Augment OAuth 访问令牌的桌面应用（性能优化版）"
-authors = ["hj01857655 <hj01857655@gmail.com>", "zhaochengcube (original author)"]
+authors = ["hj01857655", "zhaochengcube (original author)"]
 license = "MIT"
 repository = "https://github.com/hj01857655/augment-token-mng"
 edition = "2021"
