@@ -36,10 +36,20 @@ jobs:
           DATE=$(date +'%Y.%m.%d')
           COMMIT_COUNT=$(git rev-list --count HEAD)
           VERSION="v${DATE}.${COMMIT_COUNT}"
+          VERSION_NUMBER="${DATE}.${COMMIT_COUNT}"
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "version_number=${VERSION_NUMBER}" >> $GITHUB_OUTPUT
           echo "Generated version: ${VERSION}"
+          echo "Version number: ${VERSION_NUMBER}"
 
 
+
+      - name: Update version in Cargo.toml
+        shell: bash
+        run: |
+          # 更新 Cargo.toml 中的版本号
+          sed -i.bak "s/^version = .*/version = \"${{ steps.version.outputs.version_number }}\"/" src-tauri/Cargo.toml
+          echo "Updated Cargo.toml version to ${{ steps.version.outputs.version_number }}"
 
       - name: Rust setup
         uses: dtolnay/rust-toolchain@stable
