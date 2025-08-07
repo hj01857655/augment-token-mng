@@ -30,6 +30,7 @@ pub struct StoredToken {
 }
 
 impl StoredToken {
+    #[allow(dead_code)]
     pub fn new(tenant_url: String, access_token: String) -> Self {
         Self {
             id: Uuid::new_v4().to_string(),
@@ -43,6 +44,7 @@ impl StoredToken {
         }
     }
 
+    #[allow(dead_code)]
     pub fn new_with_portal(tenant_url: String, access_token: String, portal_url: Option<String>) -> Self {
         Self {
             id: Uuid::new_v4().to_string(),
@@ -82,6 +84,7 @@ impl TokenStorage {
         }
     }
 
+    #[allow(dead_code)]
     pub fn add_token(&mut self, tenant_url: String, access_token: String) -> String {
         let token = StoredToken::new(tenant_url, access_token);
         let id = token.id.clone();
@@ -90,6 +93,7 @@ impl TokenStorage {
     }
 
     /// Add a new token with portal URL
+    #[allow(dead_code)]
     pub fn add_token_with_portal(&mut self, tenant_url: String, access_token: String, portal_url: Option<String>) -> String {
         let token = StoredToken::new_with_portal(tenant_url, access_token, portal_url);
         let id = token.id.clone();
@@ -112,6 +116,7 @@ impl TokenStorage {
     }
 
     /// Update an existing token
+    #[allow(dead_code)]
     pub fn update_token(&mut self, id: &str, tenant_url: String, access_token: String, portal_url: Option<String>) -> bool {
         if let Some(token) = self.tokens.iter_mut().find(|token| token.id == id) {
             token.tenant_url = tenant_url;
@@ -204,6 +209,7 @@ impl TokenManager {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub async fn add_token(&self, tenant_url: String, access_token: String) -> Result<String, Box<dyn std::error::Error>> {
         let mut storage = self.load_tokens().await?;
         let id = storage.add_token(tenant_url, access_token);
@@ -211,6 +217,7 @@ impl TokenManager {
         Ok(id)
     }
 
+    #[allow(dead_code)]
     pub async fn add_token_with_portal(&self, tenant_url: String, access_token: String, portal_url: Option<String>) -> Result<String, Box<dyn std::error::Error>> {
         let mut storage = self.load_tokens().await?;
         let id = storage.add_token_with_portal(tenant_url, access_token, portal_url);
@@ -239,6 +246,7 @@ impl TokenManager {
         Ok(storage.tokens)
     }
 
+    #[allow(dead_code)]
     pub async fn update_token(&self, id: &str, tenant_url: String, access_token: String, portal_url: Option<String>) -> Result<bool, Box<dyn std::error::Error>> {
         let mut storage = self.load_tokens().await?;
         let updated = storage.update_token(id, tenant_url, access_token, portal_url);
