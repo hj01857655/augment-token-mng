@@ -171,6 +171,7 @@ impl TokenManager {
         
         // Create app data directory if it doesn't exist
         fs::create_dir_all(&app_data_dir)
+            .await
             .map_err(|e| format!("Failed to create app data directory: {}", e))?;
         
         let storage_path = app_data_dir.join("tokens.json");

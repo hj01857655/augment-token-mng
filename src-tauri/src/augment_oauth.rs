@@ -31,7 +31,7 @@ pub struct AugmentTokenResponse {
     pub tenant_url: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccountStatus {
     pub is_banned: bool,
     pub status: String,
@@ -71,7 +71,7 @@ struct TokenApiResponse {
 
 /// Base64 URL encode without padding
 fn base64_url_encode(data: &[u8]) -> String {
-    base64::encode_config(data, base64::URL_SAFE_NO_PAD)
+    base64::encode(data).replace('+', "-").replace('/', "_").trim_end_matches('=').to_string()
 }
 
 /// Create SHA256 hash
