@@ -49,6 +49,7 @@ impl<T: Clone> MemoryCache<T> {
         store.insert(key, CacheEntry::new(value, ttl));
     }
 
+    #[allow(dead_code)]
     pub fn remove(&self, key: &str) {
         let mut store = self.store.write().unwrap();
         store.remove(key);
@@ -64,6 +65,7 @@ impl<T: Clone> MemoryCache<T> {
         store.retain(|_, entry| !entry.is_expired());
     }
 
+    #[allow(dead_code)]
     pub fn size(&self) -> usize {
         let store = self.store.read().unwrap();
         store.len()
@@ -118,6 +120,7 @@ impl Default for CacheManager {
 }
 
 // Cache key generators
+#[allow(dead_code)]
 pub fn token_cache_key(tenant_url: &str, token: &str) -> String {
     format!("token:{}:{}", tenant_url, &token[..std::cmp::min(token.len(), 10)])
 }
@@ -126,11 +129,13 @@ pub fn account_status_cache_key(tenant_url: &str, token: &str) -> String {
     format!("account_status:{}:{}", tenant_url, &token[..std::cmp::min(token.len(), 10)])
 }
 
+#[allow(dead_code)]
 pub fn api_response_cache_key(endpoint: &str, params: &str) -> String {
     format!("api:{}:{}", endpoint, params)
 }
 
 // Cache TTL constants
+#[allow(dead_code)]
 pub const TOKEN_CACHE_TTL: Duration = Duration::from_secs(300); // 5 minutes
 pub const ACCOUNT_STATUS_CACHE_TTL: Duration = Duration::from_secs(600); // 10 minutes
 pub const API_RESPONSE_CACHE_TTL: Duration = Duration::from_secs(180); // 3 minutes

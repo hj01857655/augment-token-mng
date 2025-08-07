@@ -96,6 +96,7 @@ pub fn validate_token(token: &str) -> AppResult<()> {
 }
 
 /// Validate URL format
+#[allow(dead_code)]
 pub fn validate_url(url: &str) -> AppResult<()> {
     if url.is_empty() {
         return Err(AppError::validation("URL cannot be empty"));
@@ -119,6 +120,7 @@ pub fn generate_safe_cache_key(prefix: &str, sensitive_data: &str) -> String {
 }
 
 /// Truncate string for logging (to avoid logging sensitive data)
+#[allow(dead_code)]
 pub fn truncate_for_log(s: &str, max_len: usize) -> String {
     if s.len() <= max_len {
         s.to_string()

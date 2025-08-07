@@ -4,17 +4,20 @@ use tokio::sync::oneshot;
 use warp::Filter;
 
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub struct CallbackResult {
     pub code: String,
     pub state: String,
 }
 
+#[allow(dead_code)]
 pub struct HttpServer {
     shutdown_tx: Option<oneshot::Sender<()>>,
     result_receiver: Arc<Mutex<Option<oneshot::Receiver<Result<CallbackResult, String>>>>>,
 }
 
 impl HttpServer {
+    #[allow(dead_code)]
     pub fn new() -> Self {
         Self {
             shutdown_tx: None,
@@ -22,6 +25,7 @@ impl HttpServer {
         }
     }
 
+    #[allow(dead_code)]
     pub async fn start_and_wait_for_callback(&mut self) -> Result<CallbackResult, String> {
         let (result_tx, result_rx) = oneshot::channel();
         let (shutdown_tx, shutdown_rx) = oneshot::channel();
