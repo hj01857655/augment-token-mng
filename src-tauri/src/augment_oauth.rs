@@ -1,4 +1,4 @@
-use base64::{engine::general_purpose, Engine as _};
+use base64;
 use rand::Rng;
 use reqwest;
 use serde::{Deserialize, Serialize};
@@ -71,7 +71,7 @@ struct TokenApiResponse {
 
 /// Base64 URL encode without padding
 fn base64_url_encode(data: &[u8]) -> String {
-    general_purpose::URL_SAFE_NO_PAD.encode(data)
+    base64::encode_config(data, base64::URL_SAFE_NO_PAD)
 }
 
 /// Create SHA256 hash

@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
 pub struct CacheEntry<T> {
     pub data: T,
     pub expires_at: Instant,
