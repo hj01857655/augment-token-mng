@@ -136,8 +136,8 @@ pub async fn get_augment_access_token(
     tenant_url: &str,
     code_verifier: &str,
     code: &str,
+    client: &reqwest::Client,
 ) -> Result<String, Box<dyn std::error::Error>> {
-    let client = reqwest::Client::new();
     
     let mut data = HashMap::new();
     data.insert("grant_type", "authorization_code");
@@ -161,6 +161,7 @@ pub async fn get_augment_access_token(
 pub async fn complete_augment_oauth_flow(
     oauth_state: &AugmentOAuthState,
     code_input: &str,
+    client: &reqwest::Client,
 ) -> Result<AugmentTokenResponse, Box<dyn std::error::Error>> {
     let parsed_code = parse_code(code_input)?;
 
@@ -168,6 +169,7 @@ pub async fn complete_augment_oauth_flow(
         &parsed_code.tenant_url,
         &oauth_state.code_verifier,
         &parsed_code.code,
+        client,
     ).await?;
 
     Ok(AugmentTokenResponse {
@@ -180,8 +182,8 @@ pub async fn complete_augment_oauth_flow(
 pub async fn check_account_ban_status(
     token: &str,
     tenant_url: &str,
+    client: &reqwest::Client,
 ) -> Result<AccountStatus, Box<dyn std::error::Error>> {
-    let client = reqwest::Client::new();
 
     // Prepare test chat request
     let chat_request = ChatRequest {

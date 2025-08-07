@@ -2,9 +2,25 @@
 
 一个基于 Tauri 构建的跨平台桌面应用程序，用于生成和管理 Augment Code 访问令牌。
 
+> **致谢**: 本项目基于 [zhaochengcube/augment-token-mng](https://github.com/zhaochengcube/augment-token-mng) 进行优化和改进。感谢原作者的贡献！
+
 ![](./1.png)
 
 ![](./2.png)
+
+## 🚀 最新版本 v0.1.4
+
+### 性能优化亮点
+- **HTTP连接优化**: 全局连接池，减少50%连接时间
+- **异步文件操作**: 提升UI响应性
+- **智能缓存系统**: API响应缓存，减少重复请求
+- **前端打包优化**: 代码分割和压缩，更快加载
+- **依赖精简**: 减少30%编译时间
+
+### 下载安装
+- **Windows**: 下载 `.msi` 安装包
+- **macOS**: 下载 `.dmg` 安装包
+- **Linux**: 下载 `.deb` 或 `.AppImage` 文件
 
 ## 安装指南
 

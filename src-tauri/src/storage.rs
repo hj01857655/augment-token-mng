@@ -1,9 +1,9 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use std::fs;
 use std::path::PathBuf;
 use uuid::Uuid;
 use tauri::Manager;
+use tokio::fs;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PortalInfo {
@@ -178,97 +178,99 @@ impl TokenManager {
         Ok(Self { storage_path })
     }
 
-    pub fn load_tokens(&self) -> Result<TokenStorage, Box<dyn std::error::Error>> {
+    pub async fn load_tokens(&self) -> Result<TokenStorage, Box<dyn std::error::Error>> {
         if !self.storage_path.exists() {
             return Ok(TokenStorage::new());
         }
 
         let content = fs::read_to_string(&self.storage_path)
+            .await
             .map_err(|e| format!("Failed to read tokens file: {}", e))?;
-        
+
         let storage: TokenStorage = serde_json::from_str(&content)
             .map_err(|e| format!("Failed to parse tokens file: {}", e))?;
-        
+
         Ok(storage)
     }
 
-    pub fn save_tokens(&self, storage: &TokenStorage) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn save_tokens(&self, storage: &TokenStorage) -> Result<(), Box<dyn std::error::Error>> {
         let content = serde_json::to_string_pretty(storage)
             .map_err(|e| format!("Failed to serialize tokens: {}", e))?;
-        
+
         fs::write(&self.storage_path, content)
+            .await
             .map_err(|e| format!("Failed to write tokens file: {}", e))?;
-        
+
         Ok(())
     }
 
-    pub fn add_token(&self, tenant_url: String, access_token: String) -> Result<String, Box<dyn std::error::Error>> {
-        let mut storage = self.load_tokens()?;
+    pub async fn add_token(&self, tenant_url: String, access_token: String) -> Result<String, Box<dyn std::error::Error>> {
+        let mut storage = self.load_tokens().await?;
         let id = storage.add_token(tenant_url, access_token);
-        self.save_tokens(&storage)?;
+        self.save_tokens(&storage).await?;
         Ok(id)
     }
 
-    pub fn add_token_with_portal(&self, tenant_url: String, access_token: String, portal_url: Option<String>) -> Result<String, Box<dyn std::error::Error>> {
-        let mut storage = self.load_tokens()?;
+    pub async fn add_token_with_portal(&self, tenant_url: String, access_token: String, portal_url: Option<String>) -> Result<String, Box<dyn std::error::Error>> {
+        let mut storage = self.load_tokens().await?;
         let id = storage.add_token_with_portal(tenant_url, access_token, portal_url);
-        self.save_tokens(&storage)?;
+        self.save_tokens(&storage).await?;
         Ok(id)
     }
 
-    pub fn add_token_with_details(&self, tenant_url: String, access_token: String, portal_url: Option<String>, email_note: Option<String>) -> Result<String, Box<dyn std::error::Error>> {
-        let mut storage = self.load_tokens()?;
+    pub async fn add_token_with_details(&self, tenant_url: String, access_token: String, portal_url: Option<String>, email_note: Option<String>) -> Result<String, Box<dyn std::error::Error>> {
+        let mut storage = self.load_tokens().await?;
         let id = storage.add_token_with_details(tenant_url, access_token, portal_url, email_note);
-        self.save_tokens(&storage)?;
+        self.save_tokens(&storage).await?;
         Ok(id)
     }
 
-    pub fn remove_token(&self, id: &str) -> Result<bool, Box<dyn std::error::Error>> {
-        let mut storage = self.load_tokens()?;
+    pub async fn remove_token(&self, id: &str) -> Result<bool, Box<dyn std::error::Error>> {
+        let mut storage = self.load_tokens().await?;
         let removed = storage.remove_token(id);
         if removed {
-            self.save_tokens(&storage)?;
+            self.save_tokens(&storage).await?;
         }
         Ok(removed)
     }
 
-    pub fn get_all_tokens(&self) -> Result<Vec<StoredToken>, Box<dyn std::error::Error>> {
-        let storage = self.load_tokens()?;
+    pub async fn get_all_tokens(&self) -> Result<Vec<StoredToken>, Box<dyn std::error::Error>> {
+        let storage = self.load_tokens().await?;
         Ok(storage.tokens)
     }
 
-    pub fn update_token(&self, id: &str, tenant_url: String, access_token: String, portal_url: Option<String>) -> Result<bool, Box<dyn std::error::Error>> {
-        let mut storage = self.load_tokens()?;
+    pub async fn update_token(&self, id: &str, tenant_url: String, access_token: String, portal_url: Option<String>) -> Result<bool, Box<dyn std::error::Error>> {
+        let mut storage = self.load_tokens().await?;
         let updated = storage.update_token(id, tenant_url, access_token, portal_url);
         if updated {
-            self.save_tokens(&storage)?;
+            self.save_tokens(&storage).await?;
         }
         Ok(updated)
     }
 
-    pub fn update_token_with_details(&self, id: &str, tenant_url: String, access_token: String, portal_url: Option<String>, email_note: Option<String>) -> Result<bool, Box<dyn std::error::Error>> {
-        let mut storage = self.load_tokens()?;
+    pub async fn update_token_with_details(&self, id: &str, tenant_url: String, access_token: String, portal_url: Option<String>, email_note: Option<String>) -> Result<bool, Box<dyn std::error::Error>> {
+        let mut storage = self.load_tokens().await?;
         let updated = storage.update_token_with_details(id, tenant_url, access_token, portal_url, email_note);
         if updated {
-            self.save_tokens(&storage)?;
+            self.save_tokens(&storage).await?;
         }
         Ok(updated)
     }
 
-    pub fn update_token_ban_status(&self, id: &str, ban_status: Option<String>) -> Result<bool, Box<dyn std::error::Error>> {
-        let mut storage = self.load_tokens()?;
+    pub async fn update_token_ban_status(&self, id: &str, ban_status: Option<String>) -> Result<bool, Box<dyn std::error::Error>> {
+        let mut storage = self.load_tokens().await?;
         let updated = storage.update_token_ban_status(id, ban_status);
         if updated {
-            self.save_tokens(&storage)?;
+            self.save_tokens(&storage).await?;
         }
         Ok(updated)
     }
 
-    pub fn update_token_portal_info(&self, id: &str, portal_info: Option<PortalInfo>) -> Result<bool, Box<dyn std::error::Error>> {
-        let mut storage = self.load_tokens()?;
+    pub async fn update_token_portal_info(&self, id: &str, portal_info: Option<PortalInfo>) -> Result<bool, Box<dyn std::error::Error>> {
+        let mut storage = self.load_tokens().await?;
         let updated = storage.update_token_portal_info(id, portal_info);
         if updated {
-            self.save_tokens(&storage)?;
+            self.save_tokens(&storage).await?;
         }
         Ok(updated)
     }

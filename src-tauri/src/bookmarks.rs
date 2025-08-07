@@ -1,9 +1,9 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use std::fs;
 use std::path::PathBuf;
 use uuid::Uuid;
 use tauri::Manager;
+use tokio::fs;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Bookmark {
@@ -104,62 +104,64 @@ impl BookmarkManager {
         Ok(Self { storage_path })
     }
 
-    pub fn load_bookmarks(&self) -> Result<BookmarkStorage, Box<dyn std::error::Error>> {
+    pub async fn load_bookmarks(&self) -> Result<BookmarkStorage, Box<dyn std::error::Error>> {
         if !self.storage_path.exists() {
             return Ok(BookmarkStorage::new());
         }
 
         let content = fs::read_to_string(&self.storage_path)
+            .await
             .map_err(|e| format!("Failed to read bookmarks file: {}", e))?;
-        
+
         let storage: BookmarkStorage = serde_json::from_str(&content)
             .map_err(|e| format!("Failed to parse bookmarks file: {}", e))?;
-        
+
         Ok(storage)
     }
 
-    pub fn save_bookmarks(&self, storage: &BookmarkStorage) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn save_bookmarks(&self, storage: &BookmarkStorage) -> Result<(), Box<dyn std::error::Error>> {
         let content = serde_json::to_string_pretty(storage)
             .map_err(|e| format!("Failed to serialize bookmarks: {}", e))?;
-        
+
         fs::write(&self.storage_path, content)
+            .await
             .map_err(|e| format!("Failed to write bookmarks file: {}", e))?;
-        
+
         Ok(())
     }
 
-    pub fn add_bookmark(&self, name: String, url: String, description: Option<String>, category: String) -> Result<String, Box<dyn std::error::Error>> {
-        let mut storage = self.load_bookmarks()?;
+    pub async fn add_bookmark(&self, name: String, url: String, description: Option<String>, category: String) -> Result<String, Box<dyn std::error::Error>> {
+        let mut storage = self.load_bookmarks().await?;
         let id = storage.add_bookmark(name, url, description, category);
-        self.save_bookmarks(&storage)?;
+        self.save_bookmarks(&storage).await?;
         Ok(id)
     }
 
-    pub fn update_bookmark(&self, id: &str, name: String, url: String, description: Option<String>) -> Result<bool, Box<dyn std::error::Error>> {
-        let mut storage = self.load_bookmarks()?;
+    pub async fn update_bookmark(&self, id: &str, name: String, url: String, description: Option<String>) -> Result<bool, Box<dyn std::error::Error>> {
+        let mut storage = self.load_bookmarks().await?;
         let updated = storage.update_bookmark(id, name, url, description);
         if updated {
-            self.save_bookmarks(&storage)?;
+            self.save_bookmarks(&storage).await?;
         }
         Ok(updated)
     }
 
-    pub fn remove_bookmark(&self, id: &str) -> Result<bool, Box<dyn std::error::Error>> {
-        let mut storage = self.load_bookmarks()?;
+    pub async fn remove_bookmark(&self, id: &str) -> Result<bool, Box<dyn std::error::Error>> {
+        let mut storage = self.load_bookmarks().await?;
         let removed = storage.remove_bookmark(id);
         if removed {
-            self.save_bookmarks(&storage)?;
+            self.save_bookmarks(&storage).await?;
         }
         Ok(removed)
     }
 
-    pub fn get_bookmarks_by_category(&self, category: &str) -> Result<Vec<Bookmark>, Box<dyn std::error::Error>> {
-        let storage = self.load_bookmarks()?;
+    pub async fn get_bookmarks_by_category(&self, category: &str) -> Result<Vec<Bookmark>, Box<dyn std::error::Error>> {
+        let storage = self.load_bookmarks().await?;
         Ok(storage.get_bookmarks_by_category(category))
     }
 
-    pub fn get_all_bookmarks(&self) -> Result<Vec<Bookmark>, Box<dyn std::error::Error>> {
-        let storage = self.load_bookmarks()?;
+    pub async fn get_all_bookmarks(&self) -> Result<Vec<Bookmark>, Box<dyn std::error::Error>> {
+        let storage = self.load_bookmarks().await?;
         Ok(storage.bookmarks)
     }
 }

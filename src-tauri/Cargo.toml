@@ -1,10 +1,10 @@
 [package]
 name = "augment-token-manager"
-version = "0.1.0"
-description = "Augment Token Manager - 用于生成和管理 Augment OAuth 访问令牌的桌面应用"
-authors = ["you"]
-license = ""
-repository = ""
+version = "0.1.4"
+description = "Augment Token Manager - 用于生成和管理 Augment OAuth 访问令牌的桌面应用（性能优化版）"
+authors = ["hj01857655 <hj01857655@gmail.com>", "zhaochengcube (original author)"]
+license = "MIT"
+repository = "https://github.com/hj01857655/augment-token-mng"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -18,11 +18,10 @@ tauri-plugin-shell = "2"
 tauri-plugin-opener = "2"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-reqwest = { version = "0.11", features = ["json"] }
-tokio = { version = "1.0", features = ["full"] }
-warp = "0.3"
-open = "5.0"
-base64 = "0.21"
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
+tokio = { version = "1.0", features = ["rt-multi-thread", "fs", "time", "macros"] }
+warp = { version = "0.3", default-features = false, features = ["tokio"] }
+base64 = "0.22"
 sha2 = "0.10"
 rand = "0.8"
 url = "2.4"

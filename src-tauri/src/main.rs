@@ -5,32 +5,43 @@ mod augment_oauth;
 mod storage;
 mod bookmarks;
 mod http_server;
+mod cache;
+mod error;
+mod api_utils;
 
 use augment_oauth::{create_augment_oauth_state, generate_augment_authorize_url, complete_augment_oauth_flow, check_account_ban_status, AugmentOAuthState, AugmentTokenResponse, AccountStatus};
 use storage::{TokenManager, StoredToken, PortalInfo};
 use bookmarks::{BookmarkManager, Bookmark};
 use http_server::HttpServer;
-use std::sync::Mutex;
+use cache::{CacheManager, account_status_cache_key, ACCOUNT_STATUS_CACHE_TTL};
+use error::{AppError, AppResult};
+use api_utils::{make_cached_api_request, validate_token, validate_url, generate_safe_cache_key};
+use std::sync::{Mutex, Arc};
 use tauri::{State, Manager, WebviewWindowBuilder, WebviewUrl};
 use chrono;
+use reqwest::Client;
+use std::time::Duration;
 
-// Global state to store OAuth state
+// Global HTTP client for reuse across all requests
+fn create_http_client() -> Client {
+    Client::builder()
+        .timeout(Duration::from_secs(30))
+        .pool_max_idle_per_host(10)
+        .pool_idle_timeout(Duration::from_secs(90))
+        .user_agent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        .build()
+        .expect("Failed to create HTTP client")
+}
+
+// Global state to store OAuth state and shared resources
 struct AppState {
     augment_oauth_state: Mutex<Option<AugmentOAuthState>>,
     http_server: Mutex<Option<HttpServer>>,
+    http_client: Arc<Client>,
+    cache_manager: Arc<CacheManager>,
 }
 
-#[tauri::command]
-async fn generate_auth_url(state: State<'_, AppState>) -> Result<String, String> {
-    let augment_oauth_state = create_augment_oauth_state();
-    let auth_url = generate_augment_authorize_url(&augment_oauth_state)
-        .map_err(|e| format!("Failed to generate auth URL: {}", e))?;
-    
-    // Store the Augment OAuth state
-    *state.augment_oauth_state.lock().unwrap() = Some(augment_oauth_state);
-    
-    Ok(auth_url)
-}
+
 
 #[tauri::command]
 async fn generate_augment_auth_url(state: State<'_, AppState>) -> Result<String, String> {
@@ -46,18 +57,7 @@ async fn generate_augment_auth_url(state: State<'_, AppState>) -> Result<String,
 
 
 
-#[tauri::command]
-async fn get_token(code: String, state: State<'_, AppState>) -> Result<AugmentTokenResponse, String> {
-    let augment_oauth_state = {
-        let guard = state.augment_oauth_state.lock().unwrap();
-        guard.clone()
-            .ok_or("No Augment OAuth state found. Please generate auth URL first.")?
-    };
 
-    complete_augment_oauth_flow(&augment_oauth_state, &code)
-        .await
-        .map_err(|e| format!("Failed to complete OAuth flow: {}", e))
-}
 
 #[tauri::command]
 async fn get_augment_token(code: String, state: State<'_, AppState>) -> Result<AugmentTokenResponse, String> {
@@ -67,16 +67,29 @@ async fn get_augment_token(code: String, state: State<'_, AppState>) -> Result<A
             .ok_or("No Augment OAuth state found. Please generate auth URL first.")?
     };
 
-    complete_augment_oauth_flow(&augment_oauth_state, &code)
+    complete_augment_oauth_flow(&augment_oauth_state, &code, &state.http_client)
         .await
         .map_err(|e| format!("Failed to complete Augment OAuth flow: {}", e))
 }
 
 #[tauri::command]
-async fn check_account_status(token: String, tenant_url: String) -> Result<AccountStatus, String> {
-    check_account_ban_status(&token, &tenant_url)
+async fn check_account_status(token: String, tenant_url: String, state: State<'_, AppState>) -> Result<AccountStatus, String> {
+    let cache_key = account_status_cache_key(&tenant_url, &token);
+
+    // Try to get from cache first
+    if let Some(cached_status) = state.cache_manager.account_status_cache.get(&cache_key) {
+        return Ok(cached_status);
+    }
+
+    // If not in cache, make the API call
+    let status = check_account_ban_status(&token, &tenant_url, &state.http_client)
         .await
-        .map_err(|e| format!("Failed to check account status: {}", e))
+        .map_err(|e| format!("Failed to check account status: {}", e))?;
+
+    // Cache the result
+    state.cache_manager.account_status_cache.set(cache_key, status.clone(), ACCOUNT_STATUS_CACHE_TTL);
+
+    Ok(status)
 }
 
 #[tauri::command]
@@ -98,6 +111,7 @@ async fn save_token(
         .map_err(|e| format!("Failed to initialize token manager: {}", e))?;
 
     token_manager.add_token_with_details(tenant_url, access_token, portal_url, email_note)
+        .await
         .map_err(|e| format!("Failed to save token: {}", e))
 }
 
@@ -109,6 +123,7 @@ async fn get_all_tokens(
         .map_err(|e| format!("Failed to initialize token manager: {}", e))?;
 
     token_manager.get_all_tokens()
+        .await
         .map_err(|e| format!("Failed to load tokens: {}", e))
 }
 
@@ -121,6 +136,7 @@ async fn delete_token(
         .map_err(|e| format!("Failed to initialize token manager: {}", e))?;
 
     token_manager.remove_token(&id)
+        .await
         .map_err(|e| format!("Failed to delete token: {}", e))
 }
 
@@ -137,6 +153,7 @@ async fn update_token(
         .map_err(|e| format!("Failed to initialize token manager: {}", e))?;
 
     token_manager.update_token_with_details(&id, tenant_url, access_token, portal_url, email_note)
+        .await
         .map_err(|e| format!("Failed to update token: {}", e))
 }
 
@@ -150,6 +167,7 @@ async fn update_token_ban_status(
         .map_err(|e| format!("Failed to initialize token manager: {}", e))?;
 
     token_manager.update_token_ban_status(&id, ban_status)
+        .await
         .map_err(|e| format!("Failed to update token ban status: {}", e))
 }
 
@@ -178,6 +196,7 @@ async fn update_token_portal_info(
     };
 
     let result = token_manager.update_token_portal_info(&id, Some(portal_info))
+        .await
         .map_err(|e| format!("Failed to update token portal info: {}", e))?;
 
     println!("Portal info update result: {}", result);
@@ -199,6 +218,7 @@ async fn add_bookmark(
         .map_err(|e| format!("Failed to initialize bookmark manager: {}", e))?;
 
     bookmark_manager.add_bookmark(name, url, description, category)
+        .await
         .map_err(|e| format!("Failed to add bookmark: {}", e))
 }
 
@@ -214,6 +234,7 @@ async fn update_bookmark(
         .map_err(|e| format!("Failed to initialize bookmark manager: {}", e))?;
 
     bookmark_manager.update_bookmark(&id, name, url, description)
+        .await
         .map_err(|e| format!("Failed to update bookmark: {}", e))
 }
 
@@ -226,6 +247,7 @@ async fn delete_bookmark(
         .map_err(|e| format!("Failed to initialize bookmark manager: {}", e))?;
 
     bookmark_manager.remove_bookmark(&id)
+        .await
         .map_err(|e| format!("Failed to delete bookmark: {}", e))
 }
 
@@ -238,6 +260,7 @@ async fn get_bookmarks(
         .map_err(|e| format!("Failed to initialize bookmark manager: {}", e))?;
 
     bookmark_manager.get_bookmarks_by_category(&category)
+        .await
         .map_err(|e| format!("Failed to get bookmarks: {}", e))
 }
 
@@ -249,6 +272,7 @@ async fn get_all_bookmarks(
         .map_err(|e| format!("Failed to initialize bookmark manager: {}", e))?;
 
     bookmark_manager.get_all_bookmarks()
+        .await
         .map_err(|e| format!("Failed to get all bookmarks: {}", e))
 }
 
@@ -290,149 +314,52 @@ async fn close_window(app: tauri::AppHandle, window_label: String) -> Result<(),
 }
 
 #[tauri::command]
-async fn get_customer_info(token: String) -> Result<String, String> {
+async fn get_customer_info(token: String, state: State<'_, AppState>) -> Result<String, String> {
+    // Validate input
+    validate_token(&token).map_err(|e| e.to_string())?;
+
+    let cache_key = generate_safe_cache_key("customer_info", &token);
     let url = format!("https://portal.withorb.com/api/v1/customer_from_link?token={}", token);
 
-    let client = reqwest::Client::new();
-    let response = client
-        .get(&url)
-        .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-        .header("Accept", "application/json, text/plain, */*")
-        .header("Accept-Language", "en-US,en;q=0.9")
-        .header("Accept-Charset", "utf-8")
-        .header("Connection", "keep-alive")
-        .header("Sec-Fetch-Dest", "empty")
-        .header("Sec-Fetch-Mode", "cors")
-        .header("Sec-Fetch-Site", "same-origin")
-        .send()
+    make_cached_api_request(&state.http_client, &url, &state.cache_manager, cache_key)
         .await
-        .map_err(|e| format!("Failed to make API request: {}", e))?;
-
-    let status = response.status();
-
-    if status.is_success() {
-        let bytes = response
-            .bytes()
-            .await
-            .map_err(|e| format!("Failed to read response bytes: {}", e))?;
-
-        let response_text = String::from_utf8_lossy(&bytes).to_string();
-
-        match serde_json::from_str::<serde_json::Value>(&response_text) {
-            Ok(json_value) => {
-                match serde_json::to_string_pretty(&json_value) {
-                    Ok(formatted) => Ok(formatted),
-                    Err(_) => Ok(response_text),
-                }
-            }
-            Err(_) => Ok(response_text),
-        }
-    } else {
-        let response_text = response
-            .text()
-            .await
-            .map_err(|e| format!("Failed to read response: {}", e))?;
-        Err(format!("API request failed with status {}: {}", status, response_text))
-    }
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
-async fn get_ledger_summary(customer_id: String, pricing_unit_id: String, token: String) -> Result<String, String> {
+async fn get_ledger_summary(customer_id: String, pricing_unit_id: String, token: String, state: State<'_, AppState>) -> Result<String, String> {
+    // Validate inputs
+    validate_token(&token).map_err(|e| e.to_string())?;
+
+    if customer_id.is_empty() {
+        return Err("Customer ID cannot be empty".to_string());
+    }
+
+    if pricing_unit_id.is_empty() {
+        return Err("Pricing unit ID cannot be empty".to_string());
+    }
+
+    let cache_key = generate_safe_cache_key("ledger_summary", &format!("{}:{}:{}", customer_id, pricing_unit_id, &token));
     let url = format!("https://portal.withorb.com/api/v1/customers/{}/ledger_summary?pricing_unit_id={}&token={}",
                      customer_id, pricing_unit_id, token);
 
-    let client = reqwest::Client::new();
-    let response = client
-        .get(&url)
-        .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-        .header("Accept", "application/json, text/plain, */*")
-        .header("Accept-Language", "en-US,en;q=0.9")
-        .header("Accept-Charset", "utf-8")
-        .header("Connection", "keep-alive")
-        .header("Sec-Fetch-Dest", "empty")
-        .header("Sec-Fetch-Mode", "cors")
-        .header("Sec-Fetch-Site", "same-origin")
-        .send()
+    make_cached_api_request(&state.http_client, &url, &state.cache_manager, cache_key)
         .await
-        .map_err(|e| format!("Failed to make API request: {}", e))?;
+        .map_err(|e| e.to_string())
+}
 
-    let status = response.status();
 
-    if status.is_success() {
-        let bytes = response
-            .bytes()
-            .await
-            .map_err(|e| format!("Failed to read response bytes: {}", e))?;
 
-        let response_text = String::from_utf8_lossy(&bytes).to_string();
-
-        match serde_json::from_str::<serde_json::Value>(&response_text) {
-            Ok(json_value) => {
-                match serde_json::to_string_pretty(&json_value) {
-                    Ok(formatted) => Ok(formatted),
-                    Err(_) => Ok(response_text),
-                }
-            }
-            Err(_) => Ok(response_text),
-        }
-    } else {
-        let response_text = response
-            .text()
-            .await
-            .map_err(|e| format!("Failed to read response: {}", e))?;
-        Err(format!("API request failed with status {}: {}", status, response_text))
-    }
+#[tauri::command]
+async fn clear_cache(state: State<'_, AppState>) -> Result<(), String> {
+    state.cache_manager.clear_all();
+    Ok(())
 }
 
 #[tauri::command]
-async fn test_api_call() -> Result<String, String> {
-    let url = "https://portal.withorb.com/api/v1/customer_from_link?token=ImRhUHFhU3ZtelpKdEJrUVci.1konHDs_4UqVUJWcxaZpKV4nQik";
-
-    let client = reqwest::Client::new();
-    let response = client
-        .get(url)
-        .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-        .header("Accept", "application/json, text/plain, */*")
-        .header("Accept-Language", "en-US,en;q=0.9")
-        .header("Accept-Charset", "utf-8")
-        .header("Connection", "keep-alive")
-        .header("Sec-Fetch-Dest", "empty")
-        .header("Sec-Fetch-Mode", "cors")
-        .header("Sec-Fetch-Site", "same-origin")
-        .send()
-        .await
-        .map_err(|e| format!("Failed to make API request: {}", e))?;
-
-    let status = response.status();
-
-    if status.is_success() {
-        // 尝试获取JSON并格式化
-        let bytes = response
-            .bytes()
-            .await
-            .map_err(|e| format!("Failed to read response bytes: {}", e))?;
-
-        // 确保使用UTF-8解码
-        let response_text = String::from_utf8_lossy(&bytes).to_string();
-
-        // 尝试解析并格式化JSON
-        match serde_json::from_str::<serde_json::Value>(&response_text) {
-            Ok(json_value) => {
-                // 格式化JSON输出
-                match serde_json::to_string_pretty(&json_value) {
-                    Ok(formatted) => Ok(formatted),
-                    Err(_) => Ok(response_text), // 如果格式化失败，返回原始文本
-                }
-            }
-            Err(_) => Ok(response_text), // 如果不是有效JSON，返回原始文本
-        }
-    } else {
-        let response_text = response
-            .text()
-            .await
-            .map_err(|e| format!("Failed to read response: {}", e))?;
-        Err(format!("API request failed with status {}: {}", status, response_text))
-    }
+async fn cleanup_expired_cache(state: State<'_, AppState>) -> Result<(), String> {
+    state.cache_manager.cleanup_all_expired();
+    Ok(())
 }
 
 #[tauri::command]
@@ -484,14 +411,14 @@ fn main() {
             app.manage(AppState {
                 augment_oauth_state: Mutex::new(None),
                 http_server: Mutex::new(None),
+                http_client: Arc::new(create_http_client()),
+                cache_manager: Arc::new(CacheManager::new()),
             });
 
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            generate_auth_url,
             generate_augment_auth_url,
-            get_token,
             get_augment_token,
             check_account_status,
             open_url,
@@ -508,7 +435,8 @@ fn main() {
             get_all_bookmarks,
             get_customer_info,
             get_ledger_summary,
-            test_api_call,
+            clear_cache,
+            cleanup_expired_cache,
             open_data_folder,
 
             open_internal_browser,

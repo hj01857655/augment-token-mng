@@ -1,6 +1,6 @@
 {
   "productName": "Augment Token Manager",
-  "version": "0.1.0",
+  "version": "0.1.4",
   "identifier": "com.capslockCube.augment-token-manager",
   "build": {
     "beforeDevCommand": "npm run dev",

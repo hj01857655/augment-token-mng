@@ -18,4 +18,39 @@ export default defineConfig(async () => ({
       ignored: ["**/src-tauri/**"],
     },
   },
+
+  // Build optimizations
+  build: {
+    // Enable minification
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
+    // Enable code splitting
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['vue'],
+          tauri: ['@tauri-apps/api'],
+        },
+      },
+    },
+    // Optimize chunk size
+    chunkSizeWarningLimit: 1000,
+    // Enable source maps for debugging (disable in production)
+    sourcemap: false,
+  },
+
+  // CSS optimizations
+  css: {
+    devSourcemap: false,
+  },
+
+  // Dependency optimization
+  optimizeDeps: {
+    include: ['vue', '@tauri-apps/api'],
+  },
 }));
