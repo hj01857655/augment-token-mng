@@ -41,7 +41,7 @@ pub struct AccountStatus {
     pub debug_info: DebugInfo,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DebugInfo {
     pub request_url: String,
     pub request_headers: std::collections::HashMap<String, String>,
@@ -71,7 +71,8 @@ struct TokenApiResponse {
 
 /// Base64 URL encode without padding
 fn base64_url_encode(data: &[u8]) -> String {
-    base64::encode(data).replace('+', "-").replace('/', "_").trim_end_matches('=').to_string()
+    use base64::{Engine as _, engine::general_purpose};
+    general_purpose::URL_SAFE_NO_PAD.encode(data)
 }
 
 /// Create SHA256 hash
