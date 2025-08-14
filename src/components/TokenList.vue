@@ -47,46 +47,69 @@
 
           <!-- Token List -->
           <div v-if="tokens.length > 0" class="token-list">
-            <div class="list-header">
-              <div class="header-title">
-                <h3>Token列表 ({{ filteredTokens.length }}/{{ tokens.length }})</h3>
-
+            <!-- 现代化列表头部 -->
+            <div class="list-header-modern">
+              <!-- 标题区域 -->
+              <div class="header-title-section">
+                <div class="title-with-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="title-icon">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                  </svg>
+                  <h3 class="list-title">账户管理</h3>
+                </div>
+                <div class="count-badge">
+                  <span class="count-text">{{ filteredTokens.length }}</span>
+                  <span class="count-separator">/</span>
+                  <span class="total-count">{{ tokens.length }}</span>
+                </div>
               </div>
-              <div class="search-controls">
-                <div class="search-box">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="search-icon">
+
+              <!-- 搜索区域 -->
+              <div class="search-section">
+                <div class="search-box-modern">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" class="search-icon-modern">
                     <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
                   </svg>
                   <input
                     v-model="searchQuery"
                     type="text"
-                    placeholder="搜索Token (租户URL、邮箱备注...)"
-                    class="search-input"
+                    placeholder="搜索账户 (租户URL、邮箱备注...)"
+                    class="search-input-modern"
                   />
-                  <button v-if="searchQuery" @click="searchQuery = ''" class="clear-search">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <button v-if="searchQuery" @click="searchQuery = ''" class="clear-search-modern">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
                     </svg>
                   </button>
                 </div>
-                <div class="filter-controls">
-                  <select v-model="statusFilter" class="status-filter">
-                    <option value="">所有状态</option>
-                    <option value="ACTIVE">正常</option>
-                    <option value="SUSPENDED">已封禁</option>
-                    <option value="UNKNOWN">未知</option>
+              </div>
+
+              <!-- 筛选区域 -->
+              <div class="filter-section">
+                <div class="filter-group">
+                  <label class="filter-label">状态筛选</label>
+                  <select v-model="statusFilter" class="status-filter-modern">
+                    <option value="">全部状态</option>
+                    <option value="ACTIVE">✅ 正常</option>
+                    <option value="SUSPENDED">🚫 已封禁</option>
+                    <option value="UNKNOWN">❓ 未知</option>
                   </select>
-                  <select v-model="sortBy" class="sort-select">
-                    <option value="created_at">创建时间</option>
-                    <option value="tenant_url">租户URL</option>
-                    <option value="ban_status">状态</option>
-                  </select>
-                  <button @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'" class="sort-order-btn" :title="`排序: ${sortOrder === 'asc' ? '升序' : '降序'}`">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                      <path v-if="sortOrder === 'asc'" d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/>
-                      <path v-else d="M3 18h18v-2H3v2zM3 6v2h12V6H3zm0 7h6v-2H3v2z"/>
-                    </svg>
-                  </button>
+                </div>
+                <div class="filter-group">
+                  <label class="filter-label">排序方式</label>
+                  <div class="sort-controls">
+                    <select v-model="sortBy" class="sort-select-modern">
+                      <option value="created_at">📅 创建时间</option>
+                      <option value="tenant_url">🌐 租户URL</option>
+                      <option value="ban_status">🔒 账户状态</option>
+                    </select>
+                    <button @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'" class="sort-order-btn-modern" :title="`排序: ${sortOrder === 'asc' ? '升序' : '降序'}`">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path v-if="sortOrder === 'asc'" d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/>
+                        <path v-else d="M3 18h18v-2H3v2zM3 6v2h12V6H3zm0 7h6v-2H3v2z"/>
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -637,28 +660,75 @@ defineExpose({
 }
 
 /* 现代化列表头部样式 */
-.list-header {
+.list-header-modern {
+  margin-bottom: 28px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+  border-radius: 20px;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 4px 16px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+/* 标题区域 */
+.header-title-section {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
-  padding: 16px 20px;
-  background: linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.8) 100%);
-  border-radius: 12px;
-  border: 1px solid rgba(226, 232, 240, 0.5);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.4);
 }
 
-.list-header h3 {
+.title-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.title-icon {
+  color: #3b82f6;
+  filter: drop-shadow(0 2px 4px rgba(59, 130, 246, 0.3));
+}
+
+.list-title {
   margin: 0;
   color: #1e293b;
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 700;
   background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.count-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  border-radius: 20px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.count-text {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.count-separator {
+  opacity: 0.7;
+  margin: 0 2px;
+}
+
+.total-count {
+  opacity: 0.9;
 }
 
 /* 现代化按钮样式 */
@@ -724,113 +794,152 @@ defineExpose({
   border-radius: 8px;
 }
 
-/* 现代化搜索和过滤控件样式 */
-.search-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-top: 20px;
+/* 搜索区域样式 */
+.search-section {
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.4);
 }
 
-.search-box {
+.search-box-modern {
   position: relative;
   display: flex;
   align-items: center;
+  max-width: 500px;
 }
 
-.search-icon {
+.search-icon-modern {
   position: absolute;
   left: 16px;
   color: #64748b;
   z-index: 1;
-  transition: color 0.3s ease;
+  transition: all 0.3s ease;
 }
 
-.search-input {
+.search-input-modern {
   width: 100%;
-  padding: 14px 16px 14px 48px;
-  border: 2px solid rgba(226, 232, 240, 0.8);
-  border-radius: 12px;
-  font-size: 14px;
-  background: rgba(255, 255, 255, 0.8);
+  padding: 16px 50px 16px 48px;
+  border: 2px solid rgba(226, 232, 240, 0.6);
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    inset 0 1px 2px rgba(0, 0, 0, 0.02);
 }
 
-.search-input:focus {
+.search-input-modern:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow:
-    0 0 0 4px rgba(59, 130, 246, 0.1),
-    0 4px 16px rgba(59, 130, 246, 0.15);
-  background: rgba(255, 255, 255, 0.95);
+    0 0 0 4px rgba(59, 130, 246, 0.12),
+    0 8px 24px rgba(59, 130, 246, 0.15),
+    inset 0 1px 2px rgba(0, 0, 0, 0.02);
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-1px);
 }
 
-.search-input:focus + .search-icon {
+.search-input-modern:focus ~ .search-icon-modern {
   color: #3b82f6;
+  transform: scale(1.1);
 }
 
-/* 现代化清除按钮 */
-.clear-search {
+.search-input-modern::placeholder {
+  color: #94a3b8;
+  font-weight: 400;
+}
+
+/* 清除按钮样式 */
+.clear-search-modern {
   position: absolute;
   right: 12px;
-  background: rgba(248, 250, 252, 0.8);
+  background: rgba(248, 250, 252, 0.9);
   border: 1px solid rgba(226, 232, 240, 0.6);
-  padding: 6px;
+  padding: 8px;
   cursor: pointer;
   color: #64748b;
-  border-radius: 8px;
+  border-radius: 10px;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-}
-
-.clear-search:hover {
-  background: rgba(241, 245, 249, 0.9);
-  color: #475569;
-  transform: scale(1.05);
-}
-
-/* 现代化筛选控件 */
-.filter-controls {
   display: flex;
-  gap: 12px;
   align-items: center;
-  flex-wrap: wrap;
+  justify-content: center;
 }
 
-.status-filter,
-.sort-select {
-  padding: 10px 14px;
-  border: 2px solid rgba(226, 232, 240, 0.8);
-  border-radius: 10px;
+.clear-search-modern:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+  transform: scale(1.1);
+}
+
+/* 筛选区域样式 */
+.filter-section {
+  padding: 16px 24px 20px;
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 160px;
+}
+
+.filter-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.status-filter-modern,
+.sort-select-modern {
+  padding: 12px 16px;
+  border: 2px solid rgba(226, 232, 240, 0.6);
+  border-radius: 12px;
   font-size: 14px;
-  background: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.9);
   cursor: pointer;
   transition: all 0.3s ease;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  color: #374151;
 }
 
-.status-filter:focus,
-.sort-select:focus {
+.status-filter-modern:focus,
+.sort-select-modern:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow:
-    0 0 0 4px rgba(59, 130, 246, 0.1),
+    0 0 0 4px rgba(59, 130, 246, 0.12),
     0 4px 16px rgba(59, 130, 246, 0.15);
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 1);
+  transform: translateY(-1px);
 }
 
-.sort-order-btn {
-  background: rgba(248, 250, 252, 0.8);
-  border: 2px solid rgba(226, 232, 240, 0.8);
-  border-radius: 10px;
-  padding: 10px;
+.sort-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.sort-order-btn-modern {
+  background: rgba(248, 250, 252, 0.9);
+  border: 2px solid rgba(226, 232, 240, 0.6);
+  border-radius: 12px;
+  padding: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
@@ -838,16 +947,18 @@ defineExpose({
   justify-content: center;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  min-width: 40px;
-  min-height: 40px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  min-width: 44px;
+  min-height: 44px;
+  color: #64748b;
 }
 
-.sort-order-btn:hover {
-  background: rgba(241, 245, 249, 0.9);
-  border-color: rgba(203, 213, 225, 0.8);
+.sort-order-btn-modern:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #3b82f6;
   transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
 }
 
 @media (max-width: 768px) {
