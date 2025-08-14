@@ -301,7 +301,7 @@
                     </svg>
                     Windows
                   </div>
-                  <code class="path-code">%APPDATA%\com.augment.token-manager\tokens.json</code>
+                  <code class="path-code">%APPDATA%\com.capslockCube.augment-token-manager\tokens.json</code>
                 </div>
                 <div class="path-card">
                   <div class="platform-badge macos">
@@ -310,7 +310,7 @@
                     </svg>
                     macOS
                   </div>
-                  <code class="path-code">~/Library/Application Support/com.augment.token-manager/tokens.json</code>
+                  <code class="path-code">~/Library/Application Support/com.capslockCube.augment-token-manager/tokens.json</code>
                 </div>
                 <div class="path-card">
                   <div class="platform-badge linux">
@@ -319,7 +319,7 @@
                     </svg>
                     Linux
                   </div>
-                  <code class="path-code">~/.local/share/com.augment.token-manager/tokens.json</code>
+                  <code class="path-code">~/.local/share/com.capslockCube.augment-token-manager/tokens.json</code>
                 </div>
               </div>
             </div>

@@ -138,9 +138,9 @@ cargo tauri build    # 构建生产版本
 ### 💾 数据管理
 
 6. **数据存储位置**
-   - **Windows**: `%APPDATA%\com.augment.token-manager\tokens.json`
-   - **macOS**: `~/Library/Application Support/com.augment.token-manager/tokens.json`
-   - **Linux**: `~/.local/share/com.augment.token-manager/tokens.json`
+   - **Windows**: `%APPDATA%\com.capslockCube.augment-token-manager\tokens.json`
+   - **macOS**: `~/Library/Application Support/com.capslockCube.augment-token-manager/tokens.json`
+   - **Linux**: `~/.local/share/com.capslockCube.augment-token-manager/tokens.json`
 
 7. **数据导出与备份**
    - 点击"导出所有数据"生成完整的 JSON 备份文件
