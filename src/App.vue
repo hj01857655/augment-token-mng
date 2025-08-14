@@ -312,23 +312,19 @@
             </div>
 
             <div class="info-section">
-              <h4>📊 统计信息</h4>
+              <h4>📊 基本信息</h4>
               <div class="stats-grid">
                 <div class="stat-item">
                   <span class="stat-label">Token总数:</span>
-                  <span class="stat-value">{{ performanceStats.totalTokens }}</span>
+                  <span class="stat-value">{{ tokens.length }}</span>
                 </div>
                 <div class="stat-item">
                   <span class="stat-label">正常Token:</span>
-                  <span class="stat-value">{{ performanceStats.activeTokens }}</span>
+                  <span class="stat-value">{{ tokens.filter(t => t.ban_status === 'ACTIVE').length }}</span>
                 </div>
                 <div class="stat-item">
                   <span class="stat-label">封禁Token:</span>
-                  <span class="stat-value">{{ performanceStats.suspendedTokens }}</span>
-                </div>
-                <div class="stat-item">
-                  <span class="stat-label">最后刷新:</span>
-                  <span class="stat-value">{{ performanceStats.lastRefreshTime || '未刷新' }}</span>
+                  <span class="stat-value">{{ tokens.filter(t => t.ban_status === 'SUSPENDED').length }}</span>
                 </div>
               </div>
             </div>
@@ -363,7 +359,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
-import TokenCard from './components/TokenCard.vue'
 import TokenList from './components/TokenList.vue'
 import TokenForm from './components/TokenForm.vue'
 
@@ -375,14 +370,7 @@ const isLoading = ref(false)
 const showTokenList = ref(false)
 const showDataInfo = ref(false)
 
-// 性能统计
-const performanceStats = ref({
-  totalTokens: 0,
-  activeTokens: 0,
-  suspendedTokens: 0,
-  lastRefreshTime: null,
-  cacheHitRate: 0
-})
+
 const statusMessage = ref('')
 const statusType = ref('info')
 
@@ -436,9 +424,6 @@ const loadTokens = async () => {
   try {
     const result = await invoke('get_all_tokens')
     tokens.value = result
-
-    // 更新性能统计
-    updatePerformanceStats()
   } catch (error) {
     showStatus(`加载Token失败: ${error}`, 'error')
     tokens.value = []
@@ -447,20 +432,7 @@ const loadTokens = async () => {
   }
 }
 
-// 更新性能统计
-const updatePerformanceStats = () => {
-  const total = tokens.value.length
-  const active = tokens.value.filter(token => token.ban_status === 'ACTIVE').length
-  const suspended = tokens.value.filter(token => token.ban_status === 'SUSPENDED').length
 
-  performanceStats.value = {
-    totalTokens: total,
-    activeTokens: active,
-    suspendedTokens: suspended,
-    lastRefreshTime: new Date().toLocaleString(),
-    cacheHitRate: Math.round(Math.random() * 100) // 模拟缓存命中率
-  }
-}
 
 // Delete confirmation dialog
 const showDeleteConfirm = ref(false)
@@ -499,10 +471,7 @@ const cancelDelete = () => {
 
 
 
-const onTokenSaved = () => {
-  loadTokens()
-  showStatus('新Token已保存!', 'success')
-}
+
 
 // Token generator methods
 const copyToClipboard = async (text) => {
@@ -619,21 +588,7 @@ const handleTokenFormSuccess = async () => {
   showStatus(editingToken.value ? 'Token更新成功!' : 'Token保存成功!', 'success')
 }
 
-const saveTokenManually = async (tenantUrl, accessToken, portalUrl, emailNote) => {
-  try {
-    const result = await invoke('save_token', {
-      tenantUrl,
-      accessToken,
-      portalUrl: portalUrl || null,
-      emailNote: emailNote || null
-    })
 
-    showStatus('Token保存成功!', 'success')
-    await loadTokens()
-  } catch (error) {
-    showStatus(`保存Token失败: ${error}`, 'error')
-  }
-}
 
 // Portal dialog methods
 const handleOpenPortal = (token) => {
@@ -776,8 +731,7 @@ const exportAllData = () => {
           expiry_date: token.portal_info.expiry_date,
           is_active: token.portal_info.is_active
         } : null
-      })),
-      statistics: performanceStats.value
+      }))
     }
 
     const jsonString = JSON.stringify(exportData, null, 2)
@@ -792,7 +746,7 @@ const exportAllData = () => {
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
 
-    showStatus(`已导出 ${tokens.value.length} 个Token和统计数据`, 'success')
+    showStatus(`已导出 ${tokens.value.length} 个Token`, 'success')
     showDataInfo.value = false
   } catch (error) {
     showStatus(`导出失败: ${error.message}`, 'error')
