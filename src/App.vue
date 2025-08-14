@@ -192,12 +192,7 @@
             </svg>
             外部打开
           </button>
-          <button @click="openPortalInternal" class="dialog-btn internal">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-            </svg>
-            内置打开
-          </button>
+
           <button @click="showPortalDialog = false" class="dialog-btn cancel">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
@@ -233,12 +228,7 @@
             </svg>
             外部打开
           </button>
-          <button @click="openAuthUrlInternal" class="dialog-btn internal">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-            </svg>
-            内置打开
-          </button>
+
           <button @click="showAuthUrlDialog = false" class="dialog-btn cancel">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
@@ -613,24 +603,9 @@ const openPortalExternal = async () => {
 
   try {
     await invoke('open_url', { url: currentPortalToken.value.portal_url })
+    showStatus('正在外部浏览器中打开Portal...', 'info')
   } catch (error) {
     console.error('Failed to open portal externally:', error)
-    showStatus('打开Portal失败', 'error')
-  }
-}
-
-const openPortalInternal = async () => {
-  showPortalDialog.value = false
-  if (!currentPortalToken.value?.portal_url) return
-
-  try {
-    const displayUrl = currentPortalToken.value.tenant_url.replace(/^https?:\/\//, '').replace(/\/$/, '')
-    await invoke('open_internal_browser', {
-      url: currentPortalToken.value.portal_url,
-      title: 'Portal - ' + displayUrl
-    })
-  } catch (error) {
-    console.error('Failed to open portal internally:', error)
     showStatus('打开Portal失败', 'error')
   }
 }
@@ -650,20 +625,7 @@ const openAuthUrlExternal = async () => {
   }
 }
 
-const openAuthUrlInternal = async () => {
-  showAuthUrlDialog.value = false
-  if (!authUrl.value) return
 
-  try {
-    await invoke('open_internal_browser', {
-      url: authUrl.value,
-      title: 'Augment OAuth 授权'
-    })
-  } catch (error) {
-    console.error('Failed to open auth URL internally:', error)
-    showStatus('打开授权URL失败', 'error')
-  }
-}
 
 
 

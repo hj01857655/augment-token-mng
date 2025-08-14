@@ -149,12 +149,7 @@
             </svg>
             在浏览器中打开
           </button>
-          <button @click="openBookmarkInternal" class="dialog-btn internal">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 4H5c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 14H5V8h9v10z"/>
-            </svg>
-            内置浏览器打开
-          </button>
+
           <button @click="showBookmarkDialog = false" class="dialog-btn cancel">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
@@ -394,20 +389,7 @@ const openBookmarkExternal = async () => {
   }
 }
 
-const openBookmarkInternal = async () => {
-  showBookmarkDialog.value = false
-  if (!currentBookmark.value) return
 
-  try {
-    await invoke('open_internal_browser', {
-      url: currentBookmark.value.url,
-      title: currentBookmark.value.name || '内置浏览器'
-    })
-    showStatus('已在内置浏览器中打开', 'info')
-  } catch (error) {
-    showStatus(`打开内置浏览器失败: ${error}`, 'error')
-  }
-}
 
 const openDataFolder = async () => {
   try {

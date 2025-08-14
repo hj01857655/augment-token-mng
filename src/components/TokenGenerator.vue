@@ -37,12 +37,7 @@
                   </svg>
                   外部打开
                 </button>
-                <button @click="openAuthUrlInternal" class="btn primary" title="在内置浏览器中打开">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M19 4H5c-1.11 0-2 .9-2 2v12c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 14H5V8h9v10z"/>
-                  </svg>
-                  内置打开
-                </button>
+
               </div>
             </div>
           </div>
@@ -209,17 +204,7 @@ const openAuthUrl = async () => {
   }
 }
 
-const openAuthUrlInternal = async () => {
-  try {
-    const windowLabel = await invoke('open_internal_browser', {
-      url: authUrl.value,
-      title: 'Augment OAuth 授权'
-    })
-    showStatus('已在内置浏览器中打开授权URL', 'info')
-  } catch (error) {
-    showStatus(`打开内置浏览器失败: ${error}`, 'error')
-  }
-}
+
 
 const getAccessToken = async () => {
   if (!(authCode.value || '').trim()) {

@@ -16,7 +16,7 @@ use http_server::HttpServer;
 use cache::{CacheManager, account_status_cache_key, ACCOUNT_STATUS_CACHE_TTL};
 use api_utils::{make_cached_api_request, validate_token, generate_safe_cache_key};
 use std::sync::{Mutex, Arc};
-use tauri::{State, Manager, WebviewWindowBuilder, WebviewUrl};
+use tauri::{State, Manager};
 use chrono;
 use reqwest::Client;
 use std::time::Duration;
@@ -282,36 +282,7 @@ async fn get_all_bookmarks(
 
 
 
-#[tauri::command]
-async fn open_internal_browser(
-    app: tauri::AppHandle,
-    url: String,
-    title: Option<String>
-) -> Result<String, String> {
-    let window_label = format!("browser_{}", chrono::Utc::now().timestamp());
 
-    let _window = WebviewWindowBuilder::new(
-        &app,
-        &window_label,
-        WebviewUrl::External(url.parse().map_err(|e| format!("Invalid URL: {}", e))?)
-    )
-    .title(&title.unwrap_or_else(|| "内置浏览器".to_string()))
-    .inner_size(1000.0, 700.0)
-    .center()
-    .resizable(true)
-    .build()
-    .map_err(|e| format!("Failed to create browser window: {}", e))?;
-
-    Ok(window_label)
-}
-
-#[tauri::command]
-async fn close_window(app: tauri::AppHandle, window_label: String) -> Result<(), String> {
-    if let Some(window) = app.get_webview_window(&window_label) {
-        window.close().map_err(|e| format!("Failed to close window: {}", e))?;
-    }
-    Ok(())
-}
 
 #[tauri::command]
 async fn get_customer_info(token: String, state: State<'_, AppState>) -> Result<String, String> {
@@ -439,8 +410,7 @@ fn main() {
             cleanup_expired_cache,
             open_data_folder,
 
-            open_internal_browser,
-            close_window
+
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
