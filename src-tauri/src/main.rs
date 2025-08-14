@@ -3,7 +3,7 @@
 
 mod augment_oauth;
 mod storage;
-mod bookmarks;
+
 mod http_server;
 mod cache;
 mod error;
@@ -11,7 +11,7 @@ mod api_utils;
 
 use augment_oauth::{create_augment_oauth_state, generate_augment_authorize_url, complete_augment_oauth_flow, check_account_ban_status, AugmentOAuthState, AugmentTokenResponse, AccountStatus};
 use storage::{TokenManager, StoredToken, PortalInfo};
-use bookmarks::{BookmarkManager, Bookmark};
+
 use http_server::HttpServer;
 use cache::{CacheManager, account_status_cache_key, ACCOUNT_STATUS_CACHE_TTL};
 use api_utils::{make_cached_api_request, validate_token, generate_safe_cache_key};
@@ -205,76 +205,7 @@ async fn update_token_portal_info(
 
 
 
-// Bookmark management commands
-#[tauri::command]
-async fn add_bookmark(
-    name: String,
-    url: String,
-    description: Option<String>,
-    category: String,
-    app: tauri::AppHandle,
-) -> Result<String, String> {
-    let bookmark_manager = BookmarkManager::new(&app)
-        .map_err(|e| format!("Failed to initialize bookmark manager: {}", e))?;
 
-    bookmark_manager.add_bookmark(name, url, description, category)
-        .await
-        .map_err(|e| format!("Failed to add bookmark: {}", e))
-}
-
-#[tauri::command]
-async fn update_bookmark(
-    id: String,
-    name: String,
-    url: String,
-    description: Option<String>,
-    app: tauri::AppHandle,
-) -> Result<bool, String> {
-    let bookmark_manager = BookmarkManager::new(&app)
-        .map_err(|e| format!("Failed to initialize bookmark manager: {}", e))?;
-
-    bookmark_manager.update_bookmark(&id, name, url, description)
-        .await
-        .map_err(|e| format!("Failed to update bookmark: {}", e))
-}
-
-#[tauri::command]
-async fn delete_bookmark(
-    id: String,
-    app: tauri::AppHandle,
-) -> Result<bool, String> {
-    let bookmark_manager = BookmarkManager::new(&app)
-        .map_err(|e| format!("Failed to initialize bookmark manager: {}", e))?;
-
-    bookmark_manager.remove_bookmark(&id)
-        .await
-        .map_err(|e| format!("Failed to delete bookmark: {}", e))
-}
-
-#[tauri::command]
-async fn get_bookmarks(
-    category: String,
-    app: tauri::AppHandle,
-) -> Result<Vec<Bookmark>, String> {
-    let bookmark_manager = BookmarkManager::new(&app)
-        .map_err(|e| format!("Failed to initialize bookmark manager: {}", e))?;
-
-    bookmark_manager.get_bookmarks_by_category(&category)
-        .await
-        .map_err(|e| format!("Failed to get bookmarks: {}", e))
-}
-
-#[tauri::command]
-async fn get_all_bookmarks(
-    app: tauri::AppHandle,
-) -> Result<Vec<Bookmark>, String> {
-    let bookmark_manager = BookmarkManager::new(&app)
-        .map_err(|e| format!("Failed to initialize bookmark manager: {}", e))?;
-
-    bookmark_manager.get_all_bookmarks()
-        .await
-        .map_err(|e| format!("Failed to get all bookmarks: {}", e))
-}
 
 
 
@@ -399,11 +330,7 @@ fn main() {
             update_token,
             update_token_ban_status,
             update_token_portal_info,
-            add_bookmark,
-            update_bookmark,
-            delete_bookmark,
-            get_bookmarks,
-            get_all_bookmarks,
+
             get_customer_info,
             get_ledger_summary,
             clear_cache,

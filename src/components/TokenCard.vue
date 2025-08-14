@@ -110,7 +110,7 @@
                 v-for="(editor, index) in availableEditors"
                 :key="editor.id"
                 @click="openEditor(editor.id)"
-                :class="['editor-option', editor.id + '-option', { 'recommended': editor.isRecommended }]"
+                :class="['editor-option', editor.id + '-option']"
                 :title="`按 ${index + 1} 快速选择`"
               >
                 <div class="editor-icon">
@@ -119,13 +119,8 @@
                 <div class="editor-info">
                   <div class="editor-name-row">
                     <span class="editor-name">{{ editor.name }}</span>
-                    <span v-if="editor.isRecommended" class="recommended-badge">推荐</span>
-                    <span v-if="editor.isInstalled" class="installed-badge">已安装</span>
                   </div>
                   <span class="editor-desc">{{ editor.description }}</span>
-                  <div class="editor-stats" v-if="editor.usageCount > 0">
-                    <span class="usage-count">使用 {{ editor.usageCount }} 次</span>
-                  </div>
                 </div>
                 <div class="shortcut-key">{{ index + 1 }}</div>
               </button>
@@ -195,8 +190,7 @@ const isLoadingPortalInfo = ref(false)
 const portalInfo = ref({ data: null, error: null })
 const isCheckingStatus = ref(false)
 const showEditorModal = ref(false)
-const editorStats = ref({})
-const lastUsedEditor = ref(localStorage.getItem('lastUsedEditor') || 'cursor')
+
 
 // Computed properties
 const displayUrl = computed(() => {
@@ -214,26 +208,9 @@ const maskedToken = computed(() => {
   return token.substring(0, 10) + '...' + token.substring(token.length - 10)
 })
 
-// 可用编辑器列表（根据使用频率和推荐度排序）
+// 可用编辑器列表
 const availableEditors = computed(() => {
-  const stats = editorStats.value
-  const lastUsed = lastUsedEditor.value
-
-  return editorConfigs.map(editor => ({
-    ...editor,
-    usageCount: stats[editor.id] || 0,
-    isRecommended: true, // 两个编辑器都推荐
-    isInstalled: true, // 简化处理，实际可以通过检测来确定
-    isLastUsed: editor.id === lastUsed
-  })).sort((a, b) => {
-    // 排序优先级：最后使用 > 推荐 > 使用次数 > 字母顺序
-    if (a.isLastUsed && !b.isLastUsed) return -1
-    if (!a.isLastUsed && b.isLastUsed) return 1
-    if (a.isRecommended && !b.isRecommended) return -1
-    if (!a.isRecommended && b.isRecommended) return 1
-    if (a.usageCount !== b.usageCount) return b.usageCount - a.usageCount
-    return a.name.localeCompare(b.name)
-  })
+  return editorConfigs
 })
 
 
@@ -346,12 +323,7 @@ const openEditor = async (editorId) => {
     link.click()
     document.body.removeChild(link)
 
-    // 更新使用统计
-    updateEditorStats(editorId)
 
-    // 记住最后使用的编辑器
-    lastUsedEditor.value = editorId
-    localStorage.setItem('lastUsedEditor', editorId)
 
     // 关闭模态框
     showEditorModal.value = false
@@ -365,12 +337,7 @@ const openEditor = async (editorId) => {
   }
 }
 
-const updateEditorStats = (editorId) => {
-  const stats = { ...editorStats.value }
-  stats[editorId] = (stats[editorId] || 0) + 1
-  editorStats.value = stats
-  localStorage.setItem('editorStats', JSON.stringify(stats))
-}
+
 
 // 键盘事件处理
 const handleKeydown = (event) => {
@@ -646,16 +613,7 @@ onMounted(() => {
     loadPortalInfo(false)
   }
 
-  // 初始化编辑器统计数据
-  const savedStats = localStorage.getItem('editorStats')
-  if (savedStats) {
-    try {
-      editorStats.value = JSON.parse(savedStats)
-    } catch (error) {
-      console.error('Failed to parse editor stats:', error)
-      editorStats.value = {}
-    }
-  }
+
 
   // 添加键盘事件监听器
   document.addEventListener('keydown', handleKeydown)
@@ -1194,27 +1152,7 @@ defineExpose({
   color: #1f2937;
 }
 
-.recommended-badge {
-  background: #10b981;
-  color: white;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
 
-.installed-badge {
-  background: #3b82f6;
-  color: white;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
 
 .editor-desc {
   font-size: 13px;
@@ -1226,11 +1164,7 @@ defineExpose({
   margin-top: 2px;
 }
 
-.usage-count {
-  font-size: 12px;
-  color: #9ca3af;
-  font-style: italic;
-}
+
 
 .shortcut-key {
   position: absolute;

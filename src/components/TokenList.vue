@@ -50,21 +50,7 @@
             <div class="list-header">
               <div class="header-title">
                 <h3>Token列表 ({{ filteredTokens.length }}/{{ tokens.length }})</h3>
-                <div v-if="selectedTokens.length > 0" class="batch-actions">
-                  <span class="selected-count">已选择 {{ selectedTokens.length }} 个</span>
-                  <button @click="batchCheckStatus" class="btn secondary small" :disabled="isBatchProcessing">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
-                    </svg>
-                    批量检测
-                  </button>
-                  <button @click="clearSelection" class="btn secondary small">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-                    </svg>
-                    取消选择
-                  </button>
-                </div>
+
               </div>
               <div class="search-controls">
                 <div class="search-box">
@@ -149,9 +135,7 @@ const statusFilter = ref('')
 const sortBy = ref('created_at')
 const sortOrder = ref('desc')
 
-// 批量操作状态
-const selectedTokens = ref([])
-const isBatchProcessing = ref(false)
+
 
 // 过滤和排序后的tokens
 const filteredTokens = computed(() => {
@@ -283,66 +267,7 @@ const refreshAllPortalInfo = async () => {
   }
 }
 
-// 批量操作方法
-const toggleTokenSelection = (tokenId) => {
-  const index = selectedTokens.value.indexOf(tokenId)
-  if (index > -1) {
-    selectedTokens.value.splice(index, 1)
-  } else {
-    selectedTokens.value.push(tokenId)
-  }
-}
 
-const clearSelection = () => {
-  selectedTokens.value = []
-}
-
-const batchCheckStatus = async () => {
-  if (selectedTokens.value.length === 0) return
-
-  isBatchProcessing.value = true
-  emit('copy-success', `正在批量检测 ${selectedTokens.value.length} 个Token的状态...`, 'info')
-
-  try {
-    let successCount = 0
-    let failureCount = 0
-
-    // 并行检测所有选中的Token
-    const checkPromises = selectedTokens.value.map(async (tokenId) => {
-      const cardRef = tokenCardRefs.value[tokenId]
-      if (cardRef && typeof cardRef.checkAccountStatus === 'function') {
-        try {
-          await cardRef.checkAccountStatus()
-          successCount++
-        } catch (error) {
-          console.error(`Token ${tokenId} 状态检测失败:`, error)
-          failureCount++
-        }
-      } else {
-        failureCount++
-      }
-    })
-
-    await Promise.all(checkPromises)
-
-    // 显示结果
-    if (failureCount === 0) {
-      emit('copy-success', `批量状态检测完成 (${successCount}/${selectedTokens.value.length})`, 'success')
-    } else if (successCount === 0) {
-      emit('copy-success', `批量状态检测失败 (${failureCount}/${selectedTokens.value.length})`, 'error')
-    } else {
-      emit('copy-success', `批量状态检测部分成功 (${successCount}/${selectedTokens.value.length})`, 'warning')
-    }
-
-    // 清除选择
-    clearSelection()
-
-  } catch (error) {
-    emit('copy-success', `批量检测时发生错误: ${error.message}`, 'error')
-  } finally {
-    isBatchProcessing.value = false
-  }
-}
 
 // 导出Token数据
 const exportTokens = () => {
