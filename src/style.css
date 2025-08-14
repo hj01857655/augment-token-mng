@@ -31,27 +31,58 @@ body {
     padding: 30px;
 }
 
+/* 现代化标题样式 */
 h1 {
     text-align: center;
-    color: #333;
-    margin-bottom: 30px;
-    font-size: 2.2em;
-    font-weight: 300;
+    color: #1e293b;
+    margin-bottom: 32px;
+    font-size: 2.5em;
+    font-weight: 700;
+    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 h2 {
-    color: #555;
-    margin-bottom: 15px;
-    font-size: 1.3em;
-    font-weight: 500;
+    color: #1e293b;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+    font-weight: 600;
+    background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
+h3 {
+    color: #1e293b;
+    margin-bottom: 16px;
+    font-size: 1.25em;
+    font-weight: 600;
+}
+
+/* 现代化section样式 */
 .section {
-    margin-bottom: 30px;
-    padding: 20px;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    background: #fafafa;
+    margin-bottom: 32px;
+    padding: 28px;
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    border-radius: 16px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.06),
+        0 2px 8px rgba(0, 0, 0, 0.04);
+    transition: all 0.3s ease;
+}
+
+.section:hover {
+    transform: translateY(-2px);
+    box-shadow:
+        0 8px 24px rgba(0, 0, 0, 0.08),
+        0 4px 16px rgba(0, 0, 0, 0.06);
+    border-color: rgba(59, 130, 246, 0.3);
 }
 
 .btn {
