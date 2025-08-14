@@ -1282,8 +1282,15 @@ input[type="text"]:read-only {
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-  min-width: 300px;
-  max-width: 400px;
+  min-width: 400px;
+  max-width: 800px;
+  width: 90vw;
+}
+
+/* 数据存储对话框特殊样式 */
+.portal-dialog.data-storage-dialog {
+  max-width: 900px;
+  min-width: 600px;
 }
 
 .portal-dialog h3 {
@@ -1516,6 +1523,17 @@ input[type="text"]:read-only {
 
   .dialog-content {
     padding: 20px;
+  }
+
+  .portal-dialog {
+    min-width: 320px;
+    max-width: 95vw;
+    margin: 0 10px;
+  }
+
+  .portal-dialog.data-storage-dialog {
+    min-width: 320px;
+    max-width: 95vw;
   }
 }
 
