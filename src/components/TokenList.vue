@@ -3,7 +3,7 @@
     <div class="modal-overlay" @click="$emit('close')">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h2>已保存Token</h2>
+          <h2>账户管理</h2>
           <div class="header-actions">
             <button @click="$emit('add-token')" class="btn primary small">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
