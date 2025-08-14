@@ -1,3 +1,74 @@
+/* CSS变量定义 - 默认浅色主题 */
+:root {
+    /* 主色调 */
+    --color-primary: #3b82f6;
+    --color-primaryHover: #2563eb;
+    --color-secondary: #6b7280;
+    --color-success: #10b981;
+    --color-warning: #f59e0b;
+    --color-error: #ef4444;
+
+    /* 背景色 */
+    --color-background: #ffffff;
+    --color-surface: #f8fafc;
+    --color-surfaceHover: #f1f5f9;
+
+    /* 文字色 */
+    --color-text: #1f2937;
+    --color-textSecondary: #6b7280;
+    --color-textMuted: #9ca3af;
+
+    /* 边框色 */
+    --color-border: #e5e7eb;
+    --color-borderHover: #d1d5db;
+
+    /* 阴影和遮罩 */
+    --color-shadow: rgba(0, 0, 0, 0.1);
+    --color-overlay: rgba(0, 0, 0, 0.5);
+
+    /* 过渡动画 */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.2s ease;
+    --transition-slow: 0.3s ease;
+
+    /* 圆角 */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+
+    /* 间距 */
+    --spacing-xs: 4px;
+    --spacing-sm: 8px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+}
+
+/* 深色主题 */
+.dark {
+    --color-primary: #60a5fa;
+    --color-primaryHover: #3b82f6;
+    --color-secondary: #9ca3af;
+    --color-success: #34d399;
+    --color-warning: #fbbf24;
+    --color-error: #f87171;
+
+    --color-background: #111827;
+    --color-surface: #1f2937;
+    --color-surfaceHover: #374151;
+
+    --color-text: #f9fafb;
+    --color-textSecondary: #d1d5db;
+    --color-textMuted: #9ca3af;
+
+    --color-border: #374151;
+    --color-borderHover: #4b5563;
+
+    --color-shadow: rgba(0, 0, 0, 0.3);
+    --color-overlay: rgba(0, 0, 0, 0.7);
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -10,6 +81,9 @@ body {
     overflow: hidden;
     margin: 0;
     padding: 0;
+    background-color: var(--color-background);
+    color: var(--color-text);
+    transition: background-color var(--transition-normal), color var(--transition-normal);
 }
 
 #app {
@@ -93,7 +167,8 @@ h2 {
     margin-top: 15px;
 }
 
-.url-container, .token-container {
+.url-container,
+.token-container {
     display: flex;
     gap: 10px;
     margin-top: 10px;
@@ -103,7 +178,8 @@ h2 {
     margin-top: 15px;
 }
 
-input[type="text"], textarea {
+input[type="text"],
+textarea {
     flex: 1;
     padding: 12px;
     border: 1px solid #ddd;
@@ -170,8 +246,13 @@ input[readonly] {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Token Generator Main Page Styles */
@@ -229,13 +310,15 @@ input[readonly] {
     margin-bottom: 8px;
 }
 
-.generator-body .url-container, .generator-body .token-container {
+.generator-body .url-container,
+.generator-body .token-container {
     display: flex;
     gap: 8px;
     margin-bottom: 12px;
 }
 
-.generator-body .url-container input, .generator-body .token-container input {
+.generator-body .url-container input,
+.generator-body .token-container input {
     flex: 1;
     padding: 10px 12px;
     border: 1px solid #d1d5db;
@@ -291,5 +374,3 @@ input[readonly] {
 .btn.success:hover {
     background: #059669;
 }
-
-

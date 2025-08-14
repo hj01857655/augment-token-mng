@@ -166,19 +166,9 @@ const VSCodeIcon = () => h('svg', { width: 24, height: 24, viewBox: '0 0 24 24',
   h('path', { d: 'M23.15 2.587L18.21.21a1.494 1.494 0 0 0-1.705.29l-9.46 8.63-4.12-3.128a.999.999 0 0 0-1.276.057L.327 7.261A1 1 0 0 0 .326 8.74L3.899 12 .326 15.26a1 1 0 0 0 .001 1.479L1.65 17.94a.999.999 0 0 0 1.276.057l4.12-3.128 9.46 8.63a1.492 1.492 0 0 0 1.704.29l4.942-2.377A1.5 1.5 0 0 0 24 20.06V3.939a1.5 1.5 0 0 0-.85-1.352zm-5.146 14.861L10.826 12l7.178-5.448v10.896z' })
 ])
 
-const WebStormIcon = () => h('svg', { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'currentColor' }, [
-  h('path', { d: 'M0 0v24h24V0H0zm17.889 2.889c1.444 0 2.667.523 3.667 1.567l-1.333 1.333c-.8-.8-1.644-1.2-2.533-1.2-.889 0-1.644.4-2.267 1.2-.622.8-.933 1.8-.933 3s.311 2.2.933 3c.623.8 1.378 1.2 2.267 1.2.889 0 1.733-.4 2.533-1.2l1.333 1.333c-1 1.044-2.223 1.567-3.667 1.567-1.622 0-3.022-.578-4.2-1.733-1.178-1.156-1.767-2.556-1.767-4.2s.589-3.044 1.767-4.2c1.178-1.156 2.578-1.733 4.2-1.733zm-6.222 8.444v2.222h-8v-2.222h8z' })
-])
 
-const SublimeIcon = () => h('svg', { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'currentColor' }, [
-  h('path', { d: 'M7.28 2.5l9.44 4.72v2.36L7.28 5.86V2.5zm0 6.72l9.44 4.72v2.36L7.28 12.58V9.22zm0 6.72l9.44 4.72v2.36L7.28 19.3v-3.36z' })
-])
 
-const AtomIcon = () => h('svg', { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'currentColor' }, [
-  h('path', { d: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z' })
-])
-
-// 编辑器配置
+// 编辑器配置 - 只支持VSCode和Cursor
 const editorConfigs = [
   {
     id: 'cursor',
@@ -197,33 +187,6 @@ const editorConfigs = [
     icon: VSCodeIcon,
     color: '#1d4ed8',
     bgColor: '#dbeafe'
-  },
-  {
-    id: 'webstorm',
-    name: 'WebStorm',
-    description: 'JetBrains WebStorm',
-    protocol: 'webstorm://Augment.vscode-augment/autoAuth',
-    icon: WebStormIcon,
-    color: '#059669',
-    bgColor: '#d1fae5'
-  },
-  {
-    id: 'sublime',
-    name: 'Sublime Text',
-    description: 'Sophisticated text editor',
-    protocol: 'subl://Augment.vscode-augment/autoAuth',
-    icon: SublimeIcon,
-    color: '#dc2626',
-    bgColor: '#fee2e2'
-  },
-  {
-    id: 'atom',
-    name: 'Atom',
-    description: 'Hackable text editor',
-    protocol: 'atom://Augment.vscode-augment/autoAuth',
-    icon: AtomIcon,
-    color: '#7c3aed',
-    bgColor: '#ede9fe'
   }
 ]
 
@@ -259,7 +222,7 @@ const availableEditors = computed(() => {
   return editorConfigs.map(editor => ({
     ...editor,
     usageCount: stats[editor.id] || 0,
-    isRecommended: editor.id === 'cursor' || editor.id === 'vscode',
+    isRecommended: true, // 两个编辑器都推荐
     isInstalled: true, // 简化处理，实际可以通过检测来确定
     isLastUsed: editor.id === lastUsed
   })).sort((a, b) => {
@@ -1209,20 +1172,7 @@ defineExpose({
   color: #1d4ed8;
 }
 
-.webstorm-option .editor-icon {
-  background: #d1fae5;
-  color: #059669;
-}
 
-.sublime-option .editor-icon {
-  background: #fee2e2;
-  color: #dc2626;
-}
-
-.atom-option .editor-icon {
-  background: #ede9fe;
-  color: #7c3aed;
-}
 
 .editor-info {
   flex: 1;

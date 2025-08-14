@@ -7,11 +7,11 @@
       </div>
       <div class="header-buttons">
         <!-- Feature buttons -->
-        <button @click="showBookmarkManager = true" class="btn secondary">
+        <button @click="showDataInfo = true" class="btn secondary" title="查看数据存储位置">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+            <path d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z"/>
           </svg>
-          书签管理
+          数据存储
         </button>
         <button @click="showTokenList = true" class="btn primary">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
@@ -19,6 +19,8 @@
           </svg>
           已保存Token
         </button>
+        <LanguageToggle />
+        <ThemeToggle />
         <button @click="showHelpDialog = true" class="btn secondary" title="快捷键帮助 (F1)">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
@@ -222,11 +224,7 @@
 
 
 
-    <!-- Bookmark Manager Modal -->
-    <BookmarkManager
-      v-if="showBookmarkManager"
-      @close="showBookmarkManager = false"
-    />
+
 
     <!-- Status Messages -->
     <div
@@ -284,6 +282,243 @@
         </div>
       </div>
     </div>
+
+    <!-- 帮助对话框 -->
+    <div v-if="showHelpDialog" class="portal-dialog-overlay" @click="showHelpDialog = false">
+      <div class="portal-dialog help-dialog" @click.stop>
+        <div class="dialog-header">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="dialog-icon">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
+            </svg>
+            快捷键帮助
+          </h3>
+          <button @click="showHelpDialog = false" class="dialog-close">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="dialog-content">
+          <div class="shortcuts-grid">
+            <div class="shortcut-group">
+              <h4>基本操作</h4>
+              <div class="shortcut-item">
+                <kbd>Ctrl</kbd> + <kbd>N</kbd>
+                <span>新建Token</span>
+              </div>
+              <div class="shortcut-item">
+                <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>N</kbd>
+                <span>生成Token</span>
+              </div>
+              <div class="shortcut-item">
+                <kbd>Ctrl</kbd> + <kbd>L</kbd>
+                <span>查看Token列表</span>
+              </div>
+
+            </div>
+            <div class="shortcut-group">
+              <h4>界面控制</h4>
+              <div class="shortcut-item">
+                <kbd>ESC</kbd>
+                <span>关闭模态框</span>
+              </div>
+              <div class="shortcut-item">
+                <kbd>F1</kbd>
+                <span>显示帮助</span>
+              </div>
+              <div class="shortcut-item">
+                <kbd>1</kbd> - <kbd>5</kbd>
+                <span>编辑器快速选择</span>
+              </div>
+            </div>
+            <div class="shortcut-group">
+              <h4>编辑器一键上号</h4>
+              <div class="shortcut-item">
+                <kbd>1</kbd>
+                <span>Cursor</span>
+              </div>
+              <div class="shortcut-item">
+                <kbd>2</kbd>
+                <span>VS Code</span>
+              </div>
+              <div class="shortcut-item">
+                <kbd>3</kbd>
+                <span>WebStorm</span>
+              </div>
+              <div class="shortcut-item">
+                <kbd>4</kbd>
+                <span>Sublime Text</span>
+              </div>
+              <div class="shortcut-item">
+                <kbd>5</kbd>
+                <span>Atom</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 关于对话框 -->
+    <div v-if="showAboutDialog" class="portal-dialog-overlay" @click="showAboutDialog = false">
+      <div class="portal-dialog about-dialog" @click.stop>
+        <div class="dialog-header">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="dialog-icon">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+            </svg>
+            关于应用
+          </h3>
+          <button @click="showAboutDialog = false" class="dialog-close">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="dialog-content">
+          <div class="about-content">
+            <div class="app-logo">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor" class="logo-icon">
+                <path d="M23.15 2.587L18.21.21a1.494 1.494 0 0 0-1.705.29l-9.46 8.63-4.12-3.128a.999.999 0 0 0-1.276.057L.327 7.261A1 1 0 0 0 .326 8.74L3.899 12 .326 15.26a1 1 0 0 0 .001 1.479L1.65 17.94a.999.999 0 0 0 1.276.057l4.12-3.128 9.46 8.63a1.492 1.492 0 0 0 1.704.29l4.942-2.377A1.5 1.5 0 0 0 24 20.06V3.939a1.5 1.5 0 0 0-.85-1.352zm-5.146 14.861L10.826 12l7.178-5.448v10.896z"/>
+              </svg>
+            </div>
+            <h2>Augment Token Manager</h2>
+            <p class="app-version">版本 1.0.0</p>
+            <p class="app-description">
+              智能Token管理工具，支持多编辑器一键认证、批量操作、数据导出等功能。
+              基于Tauri + Vue 3构建，提供现代化的用户体验。
+            </p>
+            <div class="feature-highlights">
+              <div class="feature-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+                <span>5种编辑器支持</span>
+              </div>
+              <div class="feature-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+                <span>智能搜索过滤</span>
+              </div>
+              <div class="feature-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+                <span>批量操作</span>
+              </div>
+              <div class="feature-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+                <span>主题切换</span>
+              </div>
+              <div class="feature-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+                <span>多语言支持</span>
+              </div>
+              <div class="feature-item">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                </svg>
+                <span>数据导出</span>
+              </div>
+            </div>
+            <div class="tech-info">
+              <p><strong>技术栈:</strong> Tauri + Vue 3 + Rust</p>
+              <p><strong>开发者:</strong> Augment Code Community</p>
+              <p><strong>许可证:</strong> MIT License</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 数据存储信息对话框 -->
+    <div v-if="showDataInfo" class="portal-dialog-overlay" @click="showDataInfo = false">
+      <div class="portal-dialog data-storage-dialog" @click.stop>
+        <div class="dialog-header">
+          <h3>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="dialog-icon">
+              <path d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z"/>
+            </svg>
+            数据存储信息
+          </h3>
+          <button @click="showDataInfo = false" class="dialog-close">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+          </button>
+        </div>
+        <div class="dialog-content">
+          <div class="storage-info">
+            <div class="info-section">
+              <h4>📁 Token数据存储位置</h4>
+              <div class="storage-paths">
+                <div class="path-item">
+                  <strong>Windows:</strong>
+                  <code>%APPDATA%\com.augment.token-manager\tokens.json</code>
+                </div>
+                <div class="path-item">
+                  <strong>macOS:</strong>
+                  <code>~/Library/Application Support/com.augment.token-manager/tokens.json</code>
+                </div>
+                <div class="path-item">
+                  <strong>Linux:</strong>
+                  <code>~/.local/share/com.augment.token-manager/tokens.json</code>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-section">
+              <h4>📊 统计信息</h4>
+              <div class="stats-grid">
+                <div class="stat-item">
+                  <span class="stat-label">Token总数:</span>
+                  <span class="stat-value">{{ performanceStats.totalTokens }}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">正常Token:</span>
+                  <span class="stat-value">{{ performanceStats.activeTokens }}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">封禁Token:</span>
+                  <span class="stat-value">{{ performanceStats.suspendedTokens }}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">最后刷新:</span>
+                  <span class="stat-value">{{ performanceStats.lastRefreshTime || '未刷新' }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="info-section">
+              <h4>🔧 操作</h4>
+              <div class="action-buttons">
+                <button @click="openDataFolder" class="btn secondary">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z"/>
+                  </svg>
+                  打开数据文件夹
+                </button>
+                <button @click="exportAllData" class="btn secondary">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                  </svg>
+                  导出所有数据
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 通知中心 -->
+    <NotificationCenter />
   </div>
 </template>
 
@@ -293,14 +528,17 @@ import { invoke } from '@tauri-apps/api/core'
 import TokenCard from './components/TokenCard.vue'
 import TokenList from './components/TokenList.vue'
 import TokenForm from './components/TokenForm.vue'
-import BookmarkManager from './components/BookmarkManager.vue'
+
+import ThemeToggle from './components/ThemeToggle.vue'
+import LanguageToggle from './components/LanguageToggle.vue'
+import NotificationCenter from './components/NotificationCenter.vue'
 
 // Reactive data
 const tokens = ref([])
 const isLoading = ref(false)
 const showTokenList = ref(false)
-const showBookmarkManager = ref(false)
 const showAboutDialog = ref(false)
+const showDataInfo = ref(false)
 const showHelpDialog = ref(false)
 
 // 性能统计
@@ -660,10 +898,12 @@ const handleGlobalKeydown = (event) => {
     showTokenList.value = true
   }
 
-  // Ctrl/Cmd + B: 书签管理
-  if ((event.ctrlKey || event.metaKey) && event.key === 'b') {
+
+
+  // F1: 显示帮助
+  if (event.key === 'F1') {
     event.preventDefault()
-    showBookmarkManager.value = true
+    showHelpDialog.value = true
   }
 
   // ESC: 关闭所有模态框
@@ -671,10 +911,62 @@ const handleGlobalKeydown = (event) => {
     showTokenForm.value = false
     showTokenGenerator.value = false
     showTokenList.value = false
-    showBookmarkManager.value = false
     showPortalDialog.value = false
     showAuthUrlDialog.value = false
     showDeleteConfirm.value = false
+    showHelpDialog.value = false
+    showAboutDialog.value = false
+    showDataInfo.value = false
+  }
+}
+
+// 数据存储相关方法
+const openDataFolder = async () => {
+  try {
+    await invoke('open_data_folder')
+    showStatus('数据文件夹已打开', 'success')
+  } catch (error) {
+    showStatus(`打开数据文件夹失败: ${error}`, 'error')
+  }
+}
+
+const exportAllData = () => {
+  try {
+    const exportData = {
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+      tokens: tokens.value.map(token => ({
+        tenant_url: token.tenant_url,
+        access_token: token.access_token,
+        portal_url: token.portal_url || '',
+        email_note: token.email_note || '',
+        ban_status: token.ban_status || '',
+        created_at: token.created_at,
+        portal_info: token.portal_info ? {
+          credits_balance: token.portal_info.credits_balance,
+          expiry_date: token.portal_info.expiry_date,
+          is_active: token.portal_info.is_active
+        } : null
+      })),
+      statistics: performanceStats.value
+    }
+
+    const jsonString = JSON.stringify(exportData, null, 2)
+    const blob = new Blob([jsonString], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `augment-data-export-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    showStatus(`已导出 ${tokens.value.length} 个Token和统计数据`, 'success')
+    showDataInfo.value = false
+  } catch (error) {
+    showStatus(`导出失败: ${error.message}`, 'error')
   }
 }
 
@@ -1296,6 +1588,206 @@ input[type="text"]:read-only {
     right: 20px;
     top: auto;
     bottom: 20px;
+  }
+}
+
+/* 帮助和关于对话框样式 */
+.help-dialog,
+.about-dialog {
+  max-width: 600px;
+  width: 90%;
+}
+
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+  background: var(--color-surface, #f8fafc);
+}
+
+.dialog-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
+}
+
+.dialog-icon {
+  color: var(--color-primary, #3b82f6);
+}
+
+.dialog-close {
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--color-textMuted, #9ca3af);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialog-close:hover {
+  background: var(--color-surfaceHover, #f1f5f9);
+  color: var(--color-text, #1f2937);
+}
+
+.dialog-content {
+  padding: 24px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* 快捷键帮助样式 */
+.shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+}
+
+.shortcut-group h4 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
+  border-bottom: 2px solid var(--color-primary, #3b82f6);
+  padding-bottom: 8px;
+}
+
+.shortcut-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+}
+
+.shortcut-item:last-child {
+  border-bottom: none;
+}
+
+.shortcut-item kbd {
+  background: var(--color-surface, #f8fafc);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 12px;
+  font-family: monospace;
+  color: var(--color-text, #1f2937);
+  margin: 0 2px;
+}
+
+.shortcut-item span {
+  color: var(--color-textSecondary, #6b7280);
+  font-size: 14px;
+}
+
+/* 关于对话框样式 */
+.about-content {
+  text-align: center;
+}
+
+.app-logo {
+  margin-bottom: 16px;
+}
+
+.logo-icon {
+  color: var(--color-primary, #3b82f6);
+}
+
+.about-content h2 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text, #1f2937);
+}
+
+.app-version {
+  margin: 0 0 16px 0;
+  font-size: 14px;
+  color: var(--color-textMuted, #9ca3af);
+  font-weight: 500;
+}
+
+.app-description {
+  margin: 0 0 24px 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--color-textSecondary, #6b7280);
+}
+
+.feature-highlights {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin: 24px 0;
+  padding: 20px;
+  background: var(--color-surface, #f8fafc);
+  border-radius: 12px;
+  border: 1px solid var(--color-border, #e5e7eb);
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--color-textSecondary, #6b7280);
+}
+
+.feature-item svg {
+  color: var(--color-success, #10b981);
+  flex-shrink: 0;
+}
+
+.tech-info {
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border, #e5e7eb);
+  text-align: left;
+}
+
+.tech-info p {
+  margin: 8px 0;
+  font-size: 14px;
+  color: var(--color-textSecondary, #6b7280);
+}
+
+.tech-info strong {
+  color: var(--color-text, #1f2937);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .help-dialog,
+  .about-dialog {
+    width: 95%;
+    margin: 16px;
+  }
+
+  .dialog-header {
+    padding: 16px 20px;
+  }
+
+  .dialog-content {
+    padding: 20px;
+  }
+
+  .shortcuts-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .feature-highlights {
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
 }
 </style>

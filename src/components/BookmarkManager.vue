@@ -10,6 +10,11 @@
                 <path d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z"/>
               </svg>
             </button>
+            <button @click="showDataInfo = true" class="btn-icon info" title="数据存储信息">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+              </svg>
+            </button>
             <button @click="showAddForm()" class="btn-icon add" title="添加书签">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
@@ -159,6 +164,75 @@
         </div>
       </div>
     </div>
+
+    <!-- 数据存储信息对话框 -->
+    <div v-if="showDataInfo" class="data-info-modal">
+      <div class="modal-overlay" @click="showDataInfo = false">
+        <div class="modal-content small" @click.stop>
+          <div class="modal-header">
+            <h3>数据存储信息</h3>
+            <button class="close-btn" @click="showDataInfo = false">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="storage-info">
+              <div class="info-section">
+                <h4>📁 存储位置</h4>
+                <div class="storage-paths">
+                  <div class="path-item">
+                    <strong>Windows:</strong>
+                    <code>%APPDATA%\com.augment.token-manager\bookmarks.json</code>
+                  </div>
+                  <div class="path-item">
+                    <strong>macOS:</strong>
+                    <code>~/Library/Application Support/com.augment.token-manager/bookmarks.json</code>
+                  </div>
+                  <div class="path-item">
+                    <strong>Linux:</strong>
+                    <code>~/.local/share/com.augment.token-manager/bookmarks.json</code>
+                  </div>
+                </div>
+              </div>
+
+              <div class="info-section">
+                <h4>📊 统计信息</h4>
+                <div class="stats-grid">
+                  <div class="stat-item">
+                    <span class="stat-label">书签总数:</span>
+                    <span class="stat-value">{{ allBookmarks.length }}</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-label">临时书签:</span>
+                    <span class="stat-value">{{ tempBookmarksCount }}</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-label">服务书签:</span>
+                    <span class="stat-value">{{ serviceBookmarksCount }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="info-section">
+                <h4>🔧 操作</h4>
+                <div class="action-buttons">
+                  <button @click="openDataFolder" class="btn secondary">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M10 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2h-8l-2-2z"/>
+                    </svg>
+                    打开数据文件夹
+                  </button>
+                  <button @click="exportBookmarks" class="btn secondary">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                    </svg>
+                    导出书签
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -173,6 +247,7 @@ const emit = defineEmits(['close'])
 const allBookmarks = ref([])
 const showForm = ref(false)
 const editingBookmark = ref(null)
+const showDataInfo = ref(false)
 const statusMessage = ref('')
 const statusType = ref('info')
 
@@ -189,6 +264,14 @@ const formData = ref({
 // Computed properties
 const canSave = computed(() => {
   return formData.value.name.trim() && formData.value.url.trim()
+})
+
+const tempBookmarksCount = computed(() => {
+  return allBookmarks.value.filter(bookmark => bookmark.category === 'temp').length
+})
+
+const serviceBookmarksCount = computed(() => {
+  return allBookmarks.value.filter(bookmark => bookmark.category === 'service').length
 })
 
 // Methods
@@ -332,6 +415,41 @@ const openDataFolder = async () => {
     // 静默执行，不显示状态提示
   } catch (error) {
     showStatus(`打开文件夹失败: ${error}`, 'error')
+  }
+}
+
+// 导出书签
+const exportBookmarks = () => {
+  try {
+    const exportData = {
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+      bookmarks: allBookmarks.value.map(bookmark => ({
+        name: bookmark.name,
+        url: bookmark.url,
+        description: bookmark.description,
+        category: bookmark.category,
+        created_at: bookmark.created_at,
+        updated_at: bookmark.updated_at
+      }))
+    }
+
+    const jsonString = JSON.stringify(exportData, null, 2)
+    const blob = new Blob([jsonString], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `augment-bookmarks-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    showStatus(`已导出 ${allBookmarks.value.length} 个书签到文件`, 'success')
+    showDataInfo.value = false
+  } catch (error) {
+    showStatus(`导出失败: ${error.message}`, 'error')
   }
 }
 
@@ -962,5 +1080,148 @@ onMounted(() => {
 .dialog-btn.cancel:hover {
   background: #e9ecef;
   color: #495057;
+}
+
+/* 数据存储信息对话框样式 */
+.data-info-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content.small {
+  max-width: 600px;
+  width: 90%;
+}
+
+.storage-info {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.info-section h4 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text, #1f2937);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.storage-paths {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.path-item {
+  padding: 12px;
+  background: var(--color-surface, #f8fafc);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+}
+
+.path-item strong {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--color-text, #1f2937);
+  font-size: 14px;
+}
+
+.path-item code {
+  display: block;
+  background: var(--color-background, #ffffff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 13px;
+  color: var(--color-text, #1f2937);
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: var(--color-surface, #f8fafc);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+}
+
+.stat-label {
+  font-size: 14px;
+  color: var(--color-textSecondary, #6b7280);
+}
+
+.stat-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-primary, #3b82f6);
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.action-buttons .btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .modal-content.small {
+    width: 95%;
+    margin: 16px;
+  }
+
+  .storage-paths {
+    gap: 8px;
+  }
+
+  .path-item {
+    padding: 10px;
+  }
+
+  .path-item code {
+    font-size: 12px;
+    padding: 6px 8px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .action-buttons .btn {
+    justify-content: center;
+  }
 }
 </style>
