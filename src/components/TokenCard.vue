@@ -631,56 +631,84 @@ defineExpose({
 </script>
 
 <style scoped>
+/* 现代化卡片样式 */
 .token-card {
-  background: white;
-  border: 1px solid #e1e5e9;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.2s ease;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.06),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   height: fit-content;
-  min-height: 120px;
-  position: relative; /* 为状态指示器定位 */
+  min-height: 140px;
+  position: relative;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  overflow: hidden;
+}
+
+.token-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8, #7c3aed);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.token-card:hover::before {
+  opacity: 1;
 }
 
 .status-indicator {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 12px;
+  right: 12px;
   z-index: 10;
 }
 
 .status-badge {
-  font-size: 10px;
-  font-weight: 600;
-  padding: 3px 8px;
-  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 20px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .status-badge.active {
-  background: #d4edda;
-  color: #155724;
-  border: 1px solid #c3e6cb;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
 
 .status-badge.inactive {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
 
 .status-badge.banned {
-  background: #f8d7da;
-  color: #721c24;
-  border: 1px solid #f5c6cb;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 .token-card:hover {
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-  border-color: #3b82f6;
-  transform: translateY(-2px);
+  box-shadow:
+    0 12px 32px rgba(0, 0, 0, 0.12),
+    0 8px 24px rgba(0, 0, 0, 0.08),
+    0 4px 16px rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.5);
+  transform: translateY(-4px) scale(1.02);
 }
 
 .card-main {
@@ -804,69 +832,98 @@ defineExpose({
 
 
 
+/* 现代化操作按钮区域 */
 .actions {
   display: flex;
   flex-direction: row;
-  gap: 6px;
+  gap: 8px;
   justify-content: flex-end;
   margin-top: auto;
   flex-wrap: wrap;
+  padding-top: 8px;
 }
 
 .btn-action {
-  background: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  padding: 8px;
+  background: rgba(248, 250, 252, 0.8);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 10px;
+  padding: 10px;
   cursor: pointer;
-  color: #495057;
-  transition: all 0.2s;
+  color: #64748b;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 36px;
-  min-height: 36px;
+  min-width: 40px;
+  min-height: 40px;
   flex-shrink: 0;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-action::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn-action:hover::before {
+  left: 100%;
 }
 
 .btn-action:hover {
-  background: #e9ecef;
-  border-color: #adb5bd;
-  transform: translateY(-1px);
+  background: rgba(241, 245, 249, 0.9);
+  border-color: rgba(203, 213, 225, 0.8);
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+/* 特殊按钮样式 */
 .btn-action.delete {
-  color: #dc3545;
+  color: #ef4444;
 }
 
 .btn-action.delete:hover {
-  background: #f8d7da;
-  border-color: #f5c6cb;
+  background: rgba(254, 242, 242, 0.9);
+  border-color: rgba(252, 165, 165, 0.8);
+  color: #dc2626;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
 }
 
 .btn-action.portal {
-  color: #007bff;
+  color: #3b82f6;
 }
 
 .btn-action.portal:hover {
-  background: #e3f2fd;
-  border-color: #90caf9;
+  background: rgba(239, 246, 255, 0.9);
+  border-color: rgba(147, 197, 253, 0.8);
+  color: #1d4ed8;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
 }
 
 .btn-action.edit {
-  color: #28a745;
+  color: #10b981;
 }
 
 .btn-action.edit:hover {
-  background: #d4edda;
-  border-color: #c3e6cb;
+  background: rgba(236, 253, 245, 0.9);
+  border-color: rgba(167, 243, 208, 0.8);
+  color: #059669;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
 }
 
 .btn-action.editor {
-  color: #007acc;
-  background: linear-gradient(135deg, #007acc, #0369a1);
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   color: white;
   border: none;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .btn-action.editor:hover {

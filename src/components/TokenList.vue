@@ -332,6 +332,7 @@ defineExpose({
 </script>
 
 <style scoped>
+/* 现代化模态框样式 */
 .token-list-modal {
   position: fixed;
   top: 0;
@@ -339,6 +340,8 @@ defineExpose({
   right: 0;
   bottom: 0;
   z-index: 1000;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .modal-overlay {
@@ -347,65 +350,129 @@ defineExpose({
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
+  animation: fadeIn 0.3s ease-out;
 }
 
 .modal-content {
   background: white;
-  border-radius: 12px;
+  border-radius: 16px;
   width: 100%;
-  max-width: 900px;
-  height: 85vh; /* 固定高度，更大 */
+  max-width: 1200px;
+  height: 90vh;
   overflow: hidden;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  margin-top: -60px; /* 向上移动到红框位置 */
+  box-shadow:
+    0 32px 64px rgba(0, 0, 0, 0.12),
+    0 16px 32px rgba(0, 0, 0, 0.08),
+    0 8px 16px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  animation: slideUp 0.3s ease-out;
+  display: flex;
+  flex-direction: column;
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 现代化头部样式 */
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 24px 32px;
+  border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .modal-header h2 {
   margin: 0;
-  color: #1f2937;
-  font-size: 1.5rem;
-  font-weight: 600;
+  color: #1e293b;
+  font-size: 1.75rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .close-btn {
-  background: none;
-  border: none;
-  font-size: 24px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(229, 231, 235, 0.6);
+  font-size: 20px;
+  color: #64748b;
   cursor: pointer;
-  color: #6b7280;
-  padding: 4px;
-  border-radius: 4px;
-  transition: all 0.2s;
+  padding: 8px;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .close-btn:hover {
-  background: #f3f4f6;
-  color: #374151;
+  background: rgba(248, 250, 252, 0.95);
+  color: #475569;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+/* 现代化主体样式 */
 .modal-body {
-  padding: 24px;
-  height: calc(85vh - 80px); /* 固定高度 */
+  padding: 32px;
+  flex: 1;
   overflow-y: auto;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+
+  /* 自定义滚动条 */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(59, 130, 246, 0.3) transparent;
+}
+
+.modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.3);
+  border-radius: 4px;
+  transition: background 0.3s ease;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.5);
 }
 
 .empty-state {
@@ -542,39 +609,75 @@ defineExpose({
   font-weight: 600;
 }
 
+/* 现代化按钮样式 */
 .btn {
-  padding: 8px 16px;
+  padding: 10px 18px;
   border: none;
-  border-radius: 6px;
+  border-radius: 10px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.5s ease;
+}
+
+.btn:hover::before {
+  left: 100%;
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
 }
 
 .btn.secondary {
-  background: #f3f4f6;
-  color: #374151;
+  background: rgba(248, 250, 252, 0.8);
+  color: #475569;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .btn.secondary:hover {
-  background: #e5e7eb;
+  background: rgba(241, 245, 249, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .btn.small {
-  padding: 6px 12px;
+  padding: 8px 14px;
   font-size: 12px;
+  border-radius: 8px;
 }
 
-/* 搜索和过滤控件样式 */
+/* 现代化搜索和过滤控件样式 */
 .search-controls {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 16px;
+  gap: 16px;
+  margin-top: 20px;
 }
 
 .search-box {
@@ -585,24 +688,36 @@ defineExpose({
 
 .search-icon {
   position: absolute;
-  left: 12px;
-  color: #9ca3af;
+  left: 16px;
+  color: #64748b;
   z-index: 1;
+  transition: color 0.3s ease;
 }
 
 .search-input {
   width: 100%;
-  padding: 10px 12px 10px 40px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
+  padding: 14px 16px 14px 48px;
+  border: 2px solid rgba(226, 232, 240, 0.8);
+  border-radius: 12px;
   font-size: 14px;
-  transition: border-color 0.2s ease;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .search-input:focus {
   outline: none;
   border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  box-shadow:
+    0 0 0 4px rgba(59, 130, 246, 0.1),
+    0 4px 16px rgba(59, 130, 246, 0.15);
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.search-input:focus + .search-icon {
+  color: #3b82f6;
 }
 
 .clear-search {
