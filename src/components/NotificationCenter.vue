@@ -102,39 +102,69 @@ const formatTime = (timestamp) => {
 </script>
 
 <style scoped>
+/* 现代化通知中心样式 */
 .notification-center {
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 24px;
+  right: 24px;
   z-index: 10000;
-  max-width: 400px;
+  max-width: 420px;
   width: 100%;
+  pointer-events: none;
 }
 
 .notification-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
+/* 现代化通知卡片样式 */
 .notification {
-  background: var(--notification-bg);
-  border: 1px solid var(--notification-border);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.95) 100%);
+  border: 1px solid rgba(226, 232, 240, 0.8);
   border-left: 4px solid var(--notification-color);
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow:
+    0 16px 32px rgba(0, 0, 0, 0.12),
+    0 8px 16px rgba(0, 0, 0, 0.08),
+    0 4px 8px rgba(0, 0, 0, 0.04);
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 16px;
   position: relative;
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  pointer-events: auto;
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.notification::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--notification-color), transparent);
+  opacity: 0.6;
+}
+
+.notification:hover {
+  transform: translateX(-4px);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.15),
+    0 12px 24px rgba(0, 0, 0, 0.1),
+    0 6px 12px rgba(0, 0, 0, 0.06);
 }
 
 .notification-icon {
-  font-size: 18px;
+  font-size: 20px;
   flex-shrink: 0;
   margin-top: 2px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
 .notification-content {
@@ -143,103 +173,128 @@ const formatTime = (timestamp) => {
 }
 
 .notification-message {
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text, #1f2937);
-  line-height: 1.4;
-  margin-bottom: 4px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+  line-height: 1.5;
+  margin-bottom: 6px;
 }
 
+/* 现代化进度条样式 */
 .notification-progress {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 8px 0 4px 0;
+  gap: 12px;
+  margin: 12px 0 8px 0;
 }
 
 .progress-bar {
   flex: 1;
-  height: 4px;
-  background: rgba(0, 0, 0, 0.1);
-  border-radius: 2px;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
   overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .progress-fill {
   height: 100%;
-  background: var(--notification-color);
-  border-radius: 2px;
-  transition: width 0.3s ease;
+  background: linear-gradient(90deg, var(--notification-color), rgba(var(--notification-color), 0.8));
+  border-radius: 8px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .progress-text {
-  font-size: 12px;
-  color: var(--color-textMuted, #9ca3af);
-  font-weight: 500;
-  min-width: 35px;
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 600;
+  min-width: 40px;
   text-align: right;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
 }
 
+/* 现代化时间样式 */
 .notification-time {
   font-size: 12px;
-  color: var(--color-textMuted, #9ca3af);
-  margin-top: 4px;
+  color: #94a3b8;
+  margin-top: 8px;
+  font-weight: 500;
+  opacity: 0.8;
 }
 
+/* 现代化操作按钮样式 */
 .notification-actions {
   display: flex;
-  gap: 8px;
-  margin-top: 8px;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
 }
 
 .action-btn {
-  padding: 4px 12px;
-  border: 1px solid var(--notification-border);
-  border-radius: 4px;
-  background: white;
-  color: var(--color-text, #1f2937);
-  font-size: 12px;
+  padding: 8px 16px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #475569;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .action-btn:hover {
-  background: var(--color-surface, #f8fafc);
+  background: rgba(241, 245, 249, 0.95);
+  border-color: rgba(203, 213, 225, 0.8);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .action-btn.primary {
-  background: var(--notification-color);
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
   color: white;
-  border-color: var(--notification-color);
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .action-btn.primary:hover {
-  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
 }
 
+/* 现代化关闭按钮样式 */
 .notification-close {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  background: none;
-  border: none;
-  padding: 4px;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  padding: 6px;
   cursor: pointer;
-  color: var(--color-textMuted, #9ca3af);
-  border-radius: 4px;
-  transition: all 0.2s ease;
+  color: #64748b;
+  border-radius: 8px;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  width: 24px;
+  height: 24px;
 }
 
 .notification-close:hover {
-  background: rgba(0, 0, 0, 0.1);
-  color: var(--color-text, #1f2937);
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.3);
+  transform: scale(1.1);
 }
 
+/* 现代化控制区域样式 */
 .notification-controls {
-  margin-top: 12px;
+  margin-top: 16px;
   display: flex;
   justify-content: center;
 }
@@ -247,60 +302,75 @@ const formatTime = (timestamp) => {
 .clear-all-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  background: var(--color-surface, #f8fafc);
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 6px;
-  color: var(--color-textSecondary, #6b7280);
+  gap: 8px;
+  padding: 10px 18px;
+  background: rgba(248, 250, 252, 0.9);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 10px;
+  color: #64748b;
   font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .clear-all-btn:hover {
-  background: var(--color-surfaceHover, #f1f5f9);
-  border-color: var(--color-borderHover, #d1d5db);
+  background: rgba(241, 245, 249, 0.95);
+  border-color: rgba(203, 213, 225, 0.8);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* 动画 */
+/* 现代化动画效果 */
 .notification-enter-active {
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .notification-leave-active {
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .notification-enter-from {
   opacity: 0;
-  transform: translateX(100%) scale(0.9);
+  transform: translateX(120%) scale(0.8) rotateY(15deg);
 }
 
 .notification-leave-to {
   opacity: 0;
-  transform: translateX(100%) scale(0.9);
+  transform: translateX(120%) scale(0.8) rotateY(-15deg);
 }
 
 .notification-move {
-  transition: transform 0.3s ease;
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 响应式设计 */
+/* 现代化响应式设计 */
 @media (max-width: 768px) {
   .notification-center {
-    top: 10px;
-    right: 10px;
-    left: 10px;
+    top: 16px;
+    right: 16px;
+    left: 16px;
     max-width: none;
   }
-  
+
   .notification {
-    padding: 12px;
+    padding: 16px;
+    border-radius: 12px;
   }
-  
+
   .notification-message {
-    font-size: 13px;
+    font-size: 14px;
+  }
+
+  .notification-actions {
+    flex-direction: column;
+  }
+
+  .action-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 
