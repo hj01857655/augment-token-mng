@@ -20,18 +20,7 @@
           已保存Token
         </button>
 
-        <button @click="showHelpDialog = true" class="btn secondary" title="快捷键帮助 (F1)">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
-          </svg>
-          帮助
-        </button>
-        <button @click="showAboutDialog = true" class="btn secondary" title="关于应用">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-          </svg>
-          关于
-        </button>
+
       </div>
     </header>
 
@@ -282,154 +271,9 @@
       </div>
     </div>
 
-    <!-- 帮助对话框 -->
-    <div v-if="showHelpDialog" class="portal-dialog-overlay" @click="showHelpDialog = false">
-      <div class="portal-dialog help-dialog" @click.stop>
-        <div class="dialog-header">
-          <h3>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="dialog-icon">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
-            </svg>
-            快捷键帮助
-          </h3>
-          <button @click="showHelpDialog = false" class="dialog-close">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-            </svg>
-          </button>
-        </div>
-        <div class="dialog-content">
-          <div class="shortcuts-grid">
-            <div class="shortcut-group">
-              <h4>基本操作</h4>
-              <div class="shortcut-item">
-                <kbd>Ctrl</kbd> + <kbd>N</kbd>
-                <span>新建Token</span>
-              </div>
-              <div class="shortcut-item">
-                <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>N</kbd>
-                <span>生成Token</span>
-              </div>
-              <div class="shortcut-item">
-                <kbd>Ctrl</kbd> + <kbd>L</kbd>
-                <span>查看Token列表</span>
-              </div>
 
-            </div>
-            <div class="shortcut-group">
-              <h4>界面控制</h4>
-              <div class="shortcut-item">
-                <kbd>ESC</kbd>
-                <span>关闭模态框</span>
-              </div>
-              <div class="shortcut-item">
-                <kbd>F1</kbd>
-                <span>显示帮助</span>
-              </div>
-              <div class="shortcut-item">
-                <kbd>1</kbd> - <kbd>5</kbd>
-                <span>编辑器快速选择</span>
-              </div>
-            </div>
-            <div class="shortcut-group">
-              <h4>编辑器一键上号</h4>
-              <div class="shortcut-item">
-                <kbd>1</kbd>
-                <span>Cursor</span>
-              </div>
-              <div class="shortcut-item">
-                <kbd>2</kbd>
-                <span>VS Code</span>
-              </div>
-              <div class="shortcut-item">
-                <kbd>3</kbd>
-                <span>WebStorm</span>
-              </div>
-              <div class="shortcut-item">
-                <kbd>4</kbd>
-                <span>Sublime Text</span>
-              </div>
-              <div class="shortcut-item">
-                <kbd>5</kbd>
-                <span>Atom</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- 关于对话框 -->
-    <div v-if="showAboutDialog" class="portal-dialog-overlay" @click="showAboutDialog = false">
-      <div class="portal-dialog about-dialog" @click.stop>
-        <div class="dialog-header">
-          <h3>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="dialog-icon">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
-            </svg>
-            关于应用
-          </h3>
-          <button @click="showAboutDialog = false" class="dialog-close">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
-            </svg>
-          </button>
-        </div>
-        <div class="dialog-content">
-          <div class="about-content">
-            <div class="app-logo">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="currentColor" class="logo-icon">
-                <path d="M23.15 2.587L18.21.21a1.494 1.494 0 0 0-1.705.29l-9.46 8.63-4.12-3.128a.999.999 0 0 0-1.276.057L.327 7.261A1 1 0 0 0 .326 8.74L3.899 12 .326 15.26a1 1 0 0 0 .001 1.479L1.65 17.94a.999.999 0 0 0 1.276.057l4.12-3.128 9.46 8.63a1.492 1.492 0 0 0 1.704.29l4.942-2.377A1.5 1.5 0 0 0 24 20.06V3.939a1.5 1.5 0 0 0-.85-1.352zm-5.146 14.861L10.826 12l7.178-5.448v10.896z"/>
-              </svg>
-            </div>
-            <h2>Augment Token Manager</h2>
-            <p class="app-version">版本 1.0.0</p>
-            <p class="app-description">
-              智能Token管理工具，支持多编辑器一键认证、批量操作、数据导出等功能。
-              基于Tauri + Vue 3构建，提供现代化的用户体验。
-            </p>
-            <div class="feature-highlights">
-              <div class="feature-item">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                </svg>
-                <span>5种编辑器支持</span>
-              </div>
-              <div class="feature-item">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                </svg>
-                <span>智能搜索过滤</span>
-              </div>
-              <div class="feature-item">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                </svg>
-                <span>批量操作</span>
-              </div>
-              <div class="feature-item">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                </svg>
-                <span>主题切换</span>
-              </div>
 
-              <div class="feature-item">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
-                </svg>
-                <span>数据导出</span>
-              </div>
-            </div>
-            <div class="tech-info">
-              <p><strong>技术栈:</strong> Tauri + Vue 3 + Rust</p>
-              <p><strong>开发者:</strong> Augment Code Community</p>
-              <p><strong>许可证:</strong> MIT License</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- 数据存储信息对话框 -->
     <div v-if="showDataInfo" class="portal-dialog-overlay" @click="showDataInfo = false">
@@ -529,9 +373,7 @@ import NotificationCenter from './components/NotificationCenter.vue'
 const tokens = ref([])
 const isLoading = ref(false)
 const showTokenList = ref(false)
-const showAboutDialog = ref(false)
 const showDataInfo = ref(false)
-const showHelpDialog = ref(false)
 
 // 性能统计
 const performanceStats = ref({
@@ -892,11 +734,7 @@ const handleGlobalKeydown = (event) => {
 
 
 
-  // F1: 显示帮助
-  if (event.key === 'F1') {
-    event.preventDefault()
-    showHelpDialog.value = true
-  }
+
 
   // ESC: 关闭所有模态框
   if (event.key === 'Escape') {
@@ -906,8 +744,7 @@ const handleGlobalKeydown = (event) => {
     showPortalDialog.value = false
     showAuthUrlDialog.value = false
     showDeleteConfirm.value = false
-    showHelpDialog.value = false
-    showAboutDialog.value = false
+
     showDataInfo.value = false
   }
 }
@@ -1583,12 +1420,7 @@ input[type="text"]:read-only {
   }
 }
 
-/* 帮助和关于对话框样式 */
-.help-dialog,
-.about-dialog {
-  max-width: 600px;
-  width: 90%;
-}
+
 
 .dialog-header {
   display: flex;
@@ -1637,149 +1469,18 @@ input[type="text"]:read-only {
   overflow-y: auto;
 }
 
-/* 快捷键帮助样式 */
-.shortcuts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 24px;
-}
 
-.shortcut-group h4 {
-  margin: 0 0 16px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-text, #1f2937);
-  border-bottom: 2px solid var(--color-primary, #3b82f6);
-  padding-bottom: 8px;
-}
 
-.shortcut-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--color-border, #e5e7eb);
-}
 
-.shortcut-item:last-child {
-  border-bottom: none;
-}
-
-.shortcut-item kbd {
-  background: var(--color-surface, #f8fafc);
-  border: 1px solid var(--color-border, #e5e7eb);
-  border-radius: 4px;
-  padding: 2px 6px;
-  font-size: 12px;
-  font-family: monospace;
-  color: var(--color-text, #1f2937);
-  margin: 0 2px;
-}
-
-.shortcut-item span {
-  color: var(--color-textSecondary, #6b7280);
-  font-size: 14px;
-}
-
-/* 关于对话框样式 */
-.about-content {
-  text-align: center;
-}
-
-.app-logo {
-  margin-bottom: 16px;
-}
-
-.logo-icon {
-  color: var(--color-primary, #3b82f6);
-}
-
-.about-content h2 {
-  margin: 0 0 8px 0;
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--color-text, #1f2937);
-}
-
-.app-version {
-  margin: 0 0 16px 0;
-  font-size: 14px;
-  color: var(--color-textMuted, #9ca3af);
-  font-weight: 500;
-}
-
-.app-description {
-  margin: 0 0 24px 0;
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--color-textSecondary, #6b7280);
-}
-
-.feature-highlights {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
-  margin: 24px 0;
-  padding: 20px;
-  background: var(--color-surface, #f8fafc);
-  border-radius: 12px;
-  border: 1px solid var(--color-border, #e5e7eb);
-}
-
-.feature-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: var(--color-textSecondary, #6b7280);
-}
-
-.feature-item svg {
-  color: var(--color-success, #10b981);
-  flex-shrink: 0;
-}
-
-.tech-info {
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid var(--color-border, #e5e7eb);
-  text-align: left;
-}
-
-.tech-info p {
-  margin: 8px 0;
-  font-size: 14px;
-  color: var(--color-textSecondary, #6b7280);
-}
-
-.tech-info strong {
-  color: var(--color-text, #1f2937);
-}
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .help-dialog,
-  .about-dialog {
-    width: 95%;
-    margin: 16px;
-  }
-
   .dialog-header {
     padding: 16px 20px;
   }
 
   .dialog-content {
     padding: 20px;
-  }
-
-  .shortcuts-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-
-  .feature-highlights {
-    grid-template-columns: 1fr;
-    gap: 8px;
   }
 }
 </style>
