@@ -15,7 +15,13 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
               </svg>
-              刷新次数
+              刷新
+            </button>
+            <button @click="exportTokens" class="btn secondary small">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+              </svg>
+              导出
             </button>
             <button class="close-btn" @click="$emit('close')">×</button>
           </div>
@@ -42,12 +48,66 @@
           <!-- Token List -->
           <div v-if="tokens.length > 0" class="token-list">
             <div class="list-header">
-              <h3>Token列表 ({{ tokens.length }})</h3>
+              <div class="header-title">
+                <h3>Token列表 ({{ filteredTokens.length }}/{{ tokens.length }})</h3>
+                <div v-if="selectedTokens.length > 0" class="batch-actions">
+                  <span class="selected-count">已选择 {{ selectedTokens.length }} 个</span>
+                  <button @click="batchCheckStatus" class="btn secondary small" :disabled="isBatchProcessing">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                    </svg>
+                    批量检测
+                  </button>
+                  <button @click="clearSelection" class="btn secondary small">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                    取消选择
+                  </button>
+                </div>
+              </div>
+              <div class="search-controls">
+                <div class="search-box">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="search-icon">
+                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                  </svg>
+                  <input
+                    v-model="searchQuery"
+                    type="text"
+                    placeholder="搜索Token (租户URL、邮箱备注...)"
+                    class="search-input"
+                  />
+                  <button v-if="searchQuery" @click="searchQuery = ''" class="clear-search">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                    </svg>
+                  </button>
+                </div>
+                <div class="filter-controls">
+                  <select v-model="statusFilter" class="status-filter">
+                    <option value="">所有状态</option>
+                    <option value="ACTIVE">正常</option>
+                    <option value="SUSPENDED">已封禁</option>
+                    <option value="UNKNOWN">未知</option>
+                  </select>
+                  <select v-model="sortBy" class="sort-select">
+                    <option value="created_at">创建时间</option>
+                    <option value="tenant_url">租户URL</option>
+                    <option value="ban_status">状态</option>
+                  </select>
+                  <button @click="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'" class="sort-order-btn" :title="`排序: ${sortOrder === 'asc' ? '升序' : '降序'}`">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path v-if="sortOrder === 'asc'" d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/>
+                      <path v-else d="M3 18h18v-2H3v2zM3 6v2h12V6H3zm0 7h6v-2H3v2z"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div class="token-grid">
               <TokenCard
-                v-for="token in tokens"
+                v-for="token in filteredTokens"
                 :key="token.id"
                 :ref="el => setTokenCardRef(el, token.id)"
                 :token="token"
@@ -65,7 +125,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, computed } from 'vue'
 import TokenCard from './TokenCard.vue'
 
 // Props
@@ -82,6 +142,73 @@ const props = defineProps({
 
 // Emits
 const emit = defineEmits(['close', 'delete', 'copy-success', 'add-token', 'refresh', 'open-portal', 'edit'])
+
+// 搜索和过滤状态
+const searchQuery = ref('')
+const statusFilter = ref('')
+const sortBy = ref('created_at')
+const sortOrder = ref('desc')
+
+// 批量操作状态
+const selectedTokens = ref([])
+const isBatchProcessing = ref(false)
+
+// 过滤和排序后的tokens
+const filteredTokens = computed(() => {
+  let filtered = [...props.tokens]
+
+  // 搜索过滤
+  if (searchQuery.value.trim()) {
+    const query = searchQuery.value.toLowerCase().trim()
+    filtered = filtered.filter(token => {
+      return (
+        token.tenant_url.toLowerCase().includes(query) ||
+        (token.email_note && token.email_note.toLowerCase().includes(query)) ||
+        (token.portal_url && token.portal_url.toLowerCase().includes(query)) ||
+        token.access_token.toLowerCase().includes(query)
+      )
+    })
+  }
+
+  // 状态过滤
+  if (statusFilter.value) {
+    filtered = filtered.filter(token => {
+      if (statusFilter.value === 'UNKNOWN') {
+        return !token.ban_status
+      }
+      return token.ban_status === statusFilter.value
+    })
+  }
+
+  // 排序
+  filtered.sort((a, b) => {
+    let aValue, bValue
+
+    switch (sortBy.value) {
+      case 'tenant_url':
+        aValue = a.tenant_url.toLowerCase()
+        bValue = b.tenant_url.toLowerCase()
+        break
+      case 'ban_status':
+        aValue = a.ban_status || 'UNKNOWN'
+        bValue = b.ban_status || 'UNKNOWN'
+        break
+      case 'created_at':
+      default:
+        aValue = new Date(a.created_at)
+        bValue = new Date(b.created_at)
+        break
+    }
+
+    if (sortOrder.value === 'asc') {
+      return aValue > bValue ? 1 : aValue < bValue ? -1 : 0
+    } else {
+      return aValue < bValue ? 1 : aValue > bValue ? -1 : 0
+    }
+  })
+
+  return filtered
+})
 
 // Token card refs for accessing child methods
 const tokenCardRefs = ref({})
@@ -153,6 +280,102 @@ const refreshAllPortalInfo = async () => {
       success: false,
       message: `刷新 Portal 信息时发生错误: ${error.message}`
     }
+  }
+}
+
+// 批量操作方法
+const toggleTokenSelection = (tokenId) => {
+  const index = selectedTokens.value.indexOf(tokenId)
+  if (index > -1) {
+    selectedTokens.value.splice(index, 1)
+  } else {
+    selectedTokens.value.push(tokenId)
+  }
+}
+
+const clearSelection = () => {
+  selectedTokens.value = []
+}
+
+const batchCheckStatus = async () => {
+  if (selectedTokens.value.length === 0) return
+
+  isBatchProcessing.value = true
+  emit('copy-success', `正在批量检测 ${selectedTokens.value.length} 个Token的状态...`, 'info')
+
+  try {
+    let successCount = 0
+    let failureCount = 0
+
+    // 并行检测所有选中的Token
+    const checkPromises = selectedTokens.value.map(async (tokenId) => {
+      const cardRef = tokenCardRefs.value[tokenId]
+      if (cardRef && typeof cardRef.checkAccountStatus === 'function') {
+        try {
+          await cardRef.checkAccountStatus()
+          successCount++
+        } catch (error) {
+          console.error(`Token ${tokenId} 状态检测失败:`, error)
+          failureCount++
+        }
+      } else {
+        failureCount++
+      }
+    })
+
+    await Promise.all(checkPromises)
+
+    // 显示结果
+    if (failureCount === 0) {
+      emit('copy-success', `批量状态检测完成 (${successCount}/${selectedTokens.value.length})`, 'success')
+    } else if (successCount === 0) {
+      emit('copy-success', `批量状态检测失败 (${failureCount}/${selectedTokens.value.length})`, 'error')
+    } else {
+      emit('copy-success', `批量状态检测部分成功 (${successCount}/${selectedTokens.value.length})`, 'warning')
+    }
+
+    // 清除选择
+    clearSelection()
+
+  } catch (error) {
+    emit('copy-success', `批量检测时发生错误: ${error.message}`, 'error')
+  } finally {
+    isBatchProcessing.value = false
+  }
+}
+
+// 导出Token数据
+const exportTokens = () => {
+  try {
+    const exportData = filteredTokens.value.map(token => ({
+      tenant_url: token.tenant_url,
+      access_token: token.access_token,
+      portal_url: token.portal_url || '',
+      email_note: token.email_note || '',
+      ban_status: token.ban_status || '',
+      created_at: token.created_at,
+      portal_info: token.portal_info ? {
+        credits_balance: token.portal_info.credits_balance,
+        expiry_date: token.portal_info.expiry_date,
+        is_active: token.portal_info.is_active
+      } : null
+    }))
+
+    const jsonString = JSON.stringify(exportData, null, 2)
+    const blob = new Blob([jsonString], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `augment-tokens-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    emit('copy-success', `已导出 ${exportData.length} 个Token到文件`, 'success')
+  } catch (error) {
+    emit('copy-success', `导出失败: ${error.message}`, 'error')
   }
 }
 
@@ -308,6 +531,9 @@ defineExpose({
 
 .token-list {
   /* 移除内部滚动，使用外层 modal-body 的滚动 */
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .token-grid {
@@ -416,5 +642,152 @@ defineExpose({
 .btn.small {
   padding: 6px 12px;
   font-size: 12px;
+}
+
+/* 搜索和过滤控件样式 */
+.search-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  color: #9ca3af;
+  z-index: 1;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 12px 10px 40px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.clear-search {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #9ca3af;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.clear-search:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.status-filter,
+.sort-select {
+  padding: 6px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.status-filter:focus,
+.sort-select:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.sort-order-btn {
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sort-order-btn:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+@media (max-width: 768px) {
+  .search-controls {
+    gap: 8px;
+  }
+
+  .filter-controls {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .status-filter,
+  .sort-select {
+    flex: 1;
+    min-width: 100px;
+  }
+}
+
+/* 批量操作样式 */
+.header-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.batch-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.selected-count {
+  font-size: 13px;
+  color: #3b82f6;
+  font-weight: 500;
+  padding: 4px 8px;
+  background: #eff6ff;
+  border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+  .header-title {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .batch-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
 }
 </style>

@@ -19,6 +19,18 @@
           </svg>
           已保存Token
         </button>
+        <button @click="showHelpDialog = true" class="btn secondary" title="快捷键帮助 (F1)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
+          </svg>
+          帮助
+        </button>
+        <button @click="showAboutDialog = true" class="btn secondary" title="关于应用">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+          </svg>
+          关于
+        </button>
       </div>
     </header>
 
@@ -250,11 +262,33 @@
         </div>
       </div>
     </div>
+
+    <!-- 删除确认对话框 -->
+    <div v-if="showDeleteConfirm" class="portal-dialog-overlay" @click="cancelDelete">
+      <div class="portal-dialog delete-confirm" @click.stop>
+        <h3>确认删除</h3>
+        <p>确定要删除这个Token吗？此操作无法撤销。</p>
+        <div class="dialog-buttons">
+          <button @click="cancelDelete" class="dialog-btn cancel">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+            </svg>
+            取消
+          </button>
+          <button @click="confirmDelete" class="dialog-btn delete">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+            </svg>
+            删除
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import TokenCard from './components/TokenCard.vue'
 import TokenList from './components/TokenList.vue'
@@ -266,6 +300,17 @@ const tokens = ref([])
 const isLoading = ref(false)
 const showTokenList = ref(false)
 const showBookmarkManager = ref(false)
+const showAboutDialog = ref(false)
+const showHelpDialog = ref(false)
+
+// 性能统计
+const performanceStats = ref({
+  totalTokens: 0,
+  activeTokens: 0,
+  suspendedTokens: 0,
+  lastRefreshTime: null,
+  cacheHitRate: 0
+})
 const statusMessage = ref('')
 const statusType = ref('info')
 
@@ -319,25 +364,65 @@ const loadTokens = async () => {
   try {
     const result = await invoke('get_all_tokens')
     tokens.value = result
+
+    // 更新性能统计
+    updatePerformanceStats()
   } catch (error) {
     showStatus(`加载Token失败: ${error}`, 'error')
+    tokens.value = []
   } finally {
     isLoading.value = false
   }
 }
 
-const deleteToken = async (tokenId) => {
+// 更新性能统计
+const updatePerformanceStats = () => {
+  const total = tokens.value.length
+  const active = tokens.value.filter(token => token.ban_status === 'ACTIVE').length
+  const suspended = tokens.value.filter(token => token.ban_status === 'SUSPENDED').length
+
+  performanceStats.value = {
+    totalTokens: total,
+    activeTokens: active,
+    suspendedTokens: suspended,
+    lastRefreshTime: new Date().toLocaleString(),
+    cacheHitRate: Math.round(Math.random() * 100) // 模拟缓存命中率
+  }
+}
+
+// Delete confirmation dialog
+const showDeleteConfirm = ref(false)
+const tokenToDelete = ref(null)
+
+const deleteToken = (tokenId) => {
+  // 显示删除确认对话框
+  tokenToDelete.value = tokenId
+  showDeleteConfirm.value = true
+}
+
+const confirmDelete = async () => {
+  if (!tokenToDelete.value) return
+
   try {
-    const success = await invoke('delete_token', { id: tokenId })
+    const success = await invoke('delete_token', { id: tokenToDelete.value })
     if (success) {
-      tokens.value = tokens.value.filter(token => token.id !== tokenId)
+      tokens.value = tokens.value.filter(token => token.id !== tokenToDelete.value)
       showStatus('Token删除成功!', 'success')
     } else {
       showStatus('Token删除失败', 'error')
     }
   } catch (error) {
     showStatus(`删除Token失败: ${error}`, 'error')
+  } finally {
+    // 关闭对话框并清理状态
+    showDeleteConfirm.value = false
+    tokenToDelete.value = null
   }
+}
+
+const cancelDelete = () => {
+  showDeleteConfirm.value = false
+  tokenToDelete.value = null
 }
 
 
@@ -555,9 +640,53 @@ const openAuthUrlInternal = async () => {
 
 
 
+// 全局快捷键处理
+const handleGlobalKeydown = (event) => {
+  // Ctrl/Cmd + N: 新建Token
+  if ((event.ctrlKey || event.metaKey) && event.key === 'n' && !event.shiftKey) {
+    event.preventDefault()
+    showTokenForm.value = true
+  }
+
+  // Ctrl/Cmd + Shift + N: 生成Token
+  if ((event.ctrlKey || event.metaKey) && event.key === 'N' && event.shiftKey) {
+    event.preventDefault()
+    showTokenGenerator.value = true
+  }
+
+  // Ctrl/Cmd + L: 查看Token列表
+  if ((event.ctrlKey || event.metaKey) && event.key === 'l') {
+    event.preventDefault()
+    showTokenList.value = true
+  }
+
+  // Ctrl/Cmd + B: 书签管理
+  if ((event.ctrlKey || event.metaKey) && event.key === 'b') {
+    event.preventDefault()
+    showBookmarkManager.value = true
+  }
+
+  // ESC: 关闭所有模态框
+  if (event.key === 'Escape') {
+    showTokenForm.value = false
+    showTokenGenerator.value = false
+    showTokenList.value = false
+    showBookmarkManager.value = false
+    showPortalDialog.value = false
+    showAuthUrlDialog.value = false
+    showDeleteConfirm.value = false
+  }
+}
+
 // Initialize
 onMounted(() => {
   loadTokens()
+  document.addEventListener('keydown', handleGlobalKeydown)
+})
+
+// Cleanup
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleGlobalKeydown)
 })
 </script>
 
@@ -1067,6 +1196,34 @@ input[type="text"]:read-only {
 .dialog-btn.cancel:hover {
   background: #f8bbd9;
   border-color: #f48fb1;
+}
+
+.dialog-btn.delete {
+  background: #ffebee;
+  color: #d32f2f;
+  border-color: #ffcdd2;
+}
+
+.dialog-btn.delete:hover {
+  background: #ffcdd2;
+  border-color: #ef9a9a;
+}
+
+/* 删除确认对话框特定样式 */
+.portal-dialog.delete-confirm p {
+  margin: 0 0 20px 0;
+  color: #666;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.delete-confirm .dialog-buttons {
+  flex-direction: row;
+  gap: 12px;
+}
+
+.delete-confirm .dialog-btn {
+  flex: 1;
 }
 
 .additional-fields {

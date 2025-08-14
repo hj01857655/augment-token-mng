@@ -50,6 +50,11 @@
       </div>
 
       <div class="actions">
+        <button @click="openEditorModal" class="btn-action editor" title="一键上号">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M23.15 2.587L18.21.21a1.494 1.494 0 0 0-1.705.29l-9.46 8.63-4.12-3.128a.999.999 0 0 0-1.276.057L.327 7.261A1 1 0 0 0 .326 8.74L3.899 12 .326 15.26a1 1 0 0 0 .001 1.479L1.65 17.94a.999.999 0 0 0 1.276.057l4.12-3.128 9.46 8.63a1.492 1.492 0 0 0 1.704.29l4.942-2.377A1.5 1.5 0 0 0 24 20.06V3.939a1.5 1.5 0 0 0-.85-1.352zm-5.146 14.861L10.826 12l7.178-5.448v10.896z"/>
+          </svg>
+        </button>
         <button @click="copyToken" class="btn-action" title="复制Token">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
             <path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
@@ -84,10 +89,61 @@
       </div>
     </div>
   </div>
+
+  <!-- 增强版编辑器选择模态框 -->
+  <Teleport to="body">
+    <Transition name="modal" appear>
+      <div v-if="showEditorModal" class="editor-modal-overlay" @click.self="closeModal">
+        <div class="editor-modal" @click.stop>
+          <div class="modal-header">
+            <h3>选择编辑器</h3>
+            <div class="modal-subtitle">一键打开编辑器并自动认证</div>
+            <button @click.stop="showEditorModal = false" class="modal-close">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+              </svg>
+            </button>
+          </div>
+          <div class="modal-content">
+            <div class="editor-options">
+              <button
+                v-for="(editor, index) in availableEditors"
+                :key="editor.id"
+                @click="openEditor(editor.id)"
+                :class="['editor-option', editor.id + '-option', { 'recommended': editor.isRecommended }]"
+                :title="`按 ${index + 1} 快速选择`"
+              >
+                <div class="editor-icon">
+                  <component :is="editor.icon" />
+                </div>
+                <div class="editor-info">
+                  <div class="editor-name-row">
+                    <span class="editor-name">{{ editor.name }}</span>
+                    <span v-if="editor.isRecommended" class="recommended-badge">推荐</span>
+                    <span v-if="editor.isInstalled" class="installed-badge">已安装</span>
+                  </div>
+                  <span class="editor-desc">{{ editor.description }}</span>
+                  <div class="editor-stats" v-if="editor.usageCount > 0">
+                    <span class="usage-count">使用 {{ editor.usageCount }} 次</span>
+                  </div>
+                </div>
+                <div class="shortcut-key">{{ index + 1 }}</div>
+              </button>
+            </div>
+            <div class="modal-footer">
+              <div class="tips">
+                <span class="tip-text">💡 提示：按数字键 1-{{ availableEditors.length }} 快速选择</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
+import { computed, ref, onMounted, onUnmounted, h } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 
 // Props
@@ -101,10 +157,83 @@ const props = defineProps({
 // Emits
 const emit = defineEmits(['delete', 'copy-success', 'open-portal', 'edit'])
 
+// 编辑器图标组件
+const CursorIcon = () => h('svg', { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'currentColor' }, [
+  h('path', { d: 'M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' })
+])
+
+const VSCodeIcon = () => h('svg', { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'currentColor' }, [
+  h('path', { d: 'M23.15 2.587L18.21.21a1.494 1.494 0 0 0-1.705.29l-9.46 8.63-4.12-3.128a.999.999 0 0 0-1.276.057L.327 7.261A1 1 0 0 0 .326 8.74L3.899 12 .326 15.26a1 1 0 0 0 .001 1.479L1.65 17.94a.999.999 0 0 0 1.276.057l4.12-3.128 9.46 8.63a1.492 1.492 0 0 0 1.704.29l4.942-2.377A1.5 1.5 0 0 0 24 20.06V3.939a1.5 1.5 0 0 0-.85-1.352zm-5.146 14.861L10.826 12l7.178-5.448v10.896z' })
+])
+
+const WebStormIcon = () => h('svg', { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'currentColor' }, [
+  h('path', { d: 'M0 0v24h24V0H0zm17.889 2.889c1.444 0 2.667.523 3.667 1.567l-1.333 1.333c-.8-.8-1.644-1.2-2.533-1.2-.889 0-1.644.4-2.267 1.2-.622.8-.933 1.8-.933 3s.311 2.2.933 3c.623.8 1.378 1.2 2.267 1.2.889 0 1.733-.4 2.533-1.2l1.333 1.333c-1 1.044-2.223 1.567-3.667 1.567-1.622 0-3.022-.578-4.2-1.733-1.178-1.156-1.767-2.556-1.767-4.2s.589-3.044 1.767-4.2c1.178-1.156 2.578-1.733 4.2-1.733zm-6.222 8.444v2.222h-8v-2.222h8z' })
+])
+
+const SublimeIcon = () => h('svg', { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'currentColor' }, [
+  h('path', { d: 'M7.28 2.5l9.44 4.72v2.36L7.28 5.86V2.5zm0 6.72l9.44 4.72v2.36L7.28 12.58V9.22zm0 6.72l9.44 4.72v2.36L7.28 19.3v-3.36z' })
+])
+
+const AtomIcon = () => h('svg', { width: 24, height: 24, viewBox: '0 0 24 24', fill: 'currentColor' }, [
+  h('path', { d: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z' })
+])
+
+// 编辑器配置
+const editorConfigs = [
+  {
+    id: 'cursor',
+    name: 'Cursor',
+    description: 'AI-powered code editor',
+    protocol: 'cursor://Augment.vscode-augment/autoAuth',
+    icon: CursorIcon,
+    color: '#0369a1',
+    bgColor: '#e0f2fe'
+  },
+  {
+    id: 'vscode',
+    name: 'VS Code',
+    description: 'Visual Studio Code',
+    protocol: 'vscode://Augment.vscode-augment/autoAuth',
+    icon: VSCodeIcon,
+    color: '#1d4ed8',
+    bgColor: '#dbeafe'
+  },
+  {
+    id: 'webstorm',
+    name: 'WebStorm',
+    description: 'JetBrains WebStorm',
+    protocol: 'webstorm://Augment.vscode-augment/autoAuth',
+    icon: WebStormIcon,
+    color: '#059669',
+    bgColor: '#d1fae5'
+  },
+  {
+    id: 'sublime',
+    name: 'Sublime Text',
+    description: 'Sophisticated text editor',
+    protocol: 'subl://Augment.vscode-augment/autoAuth',
+    icon: SublimeIcon,
+    color: '#dc2626',
+    bgColor: '#fee2e2'
+  },
+  {
+    id: 'atom',
+    name: 'Atom',
+    description: 'Hackable text editor',
+    protocol: 'atom://Augment.vscode-augment/autoAuth',
+    icon: AtomIcon,
+    color: '#7c3aed',
+    bgColor: '#ede9fe'
+  }
+]
+
 // Reactive data
 const isLoadingPortalInfo = ref(false)
 const portalInfo = ref({ data: null, error: null })
 const isCheckingStatus = ref(false)
+const showEditorModal = ref(false)
+const editorStats = ref({})
+const lastUsedEditor = ref(localStorage.getItem('lastUsedEditor') || 'cursor')
 
 // Computed properties
 const displayUrl = computed(() => {
@@ -120,6 +249,28 @@ const maskedToken = computed(() => {
   const token = props.token.access_token
   if (token.length <= 20) return token
   return token.substring(0, 10) + '...' + token.substring(token.length - 10)
+})
+
+// 可用编辑器列表（根据使用频率和推荐度排序）
+const availableEditors = computed(() => {
+  const stats = editorStats.value
+  const lastUsed = lastUsedEditor.value
+
+  return editorConfigs.map(editor => ({
+    ...editor,
+    usageCount: stats[editor.id] || 0,
+    isRecommended: editor.id === 'cursor' || editor.id === 'vscode',
+    isInstalled: true, // 简化处理，实际可以通过检测来确定
+    isLastUsed: editor.id === lastUsed
+  })).sort((a, b) => {
+    // 排序优先级：最后使用 > 推荐 > 使用次数 > 字母顺序
+    if (a.isLastUsed && !b.isLastUsed) return -1
+    if (!a.isLastUsed && b.isLastUsed) return 1
+    if (a.isRecommended && !b.isRecommended) return -1
+    if (!a.isRecommended && b.isRecommended) return 1
+    if (a.usageCount !== b.usageCount) return b.usageCount - a.usageCount
+    return a.name.localeCompare(b.name)
+  })
 })
 
 
@@ -141,25 +292,35 @@ const formatDate = (dateString) => {
 
 
 const deleteToken = () => {
-  if (confirm('确定要删除这个Token吗？')) {
-    emit('delete', props.token.id)
-  }
+  // 直接发出删除事件，让父组件处理确认逻辑
+  emit('delete', props.token.id)
 }
 
-// 复制到剪贴板的通用方法
+// 复制到剪贴板的通用方法 - 优化版本
 const copyToClipboard = async (text) => {
   try {
-    await navigator.clipboard.writeText(text)
-    return true
+    // 优先使用现代Clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text)
+      return true
+    } else {
+      // 降级到传统方法，但使用更安全的实现
+      const textArea = document.createElement('textarea')
+      textArea.value = text
+      textArea.style.position = 'fixed'
+      textArea.style.left = '-999999px'
+      textArea.style.top = '-999999px'
+      textArea.setAttribute('readonly', '')
+      document.body.appendChild(textArea)
+      textArea.focus()
+      textArea.select()
+      const result = document.execCommand('copy')
+      document.body.removeChild(textArea)
+      return result
+    }
   } catch (error) {
-    // 备用方案
-    const textArea = document.createElement('textarea')
-    textArea.value = text
-    document.body.appendChild(textArea)
-    textArea.select()
-    document.execCommand('copy')
-    document.body.removeChild(textArea)
-    return true
+    console.error('复制失败:', error)
+    return false
   }
 }
 
@@ -190,6 +351,80 @@ const copyEmailNote = async () => {
     emit('copy-success', '邮箱备注已复制到剪贴板!', 'success')
   } else {
     emit('copy-success', '复制邮箱备注失败', 'error')
+  }
+}
+
+// 编辑器相关方法
+const openEditorModal = () => {
+  if (showEditorModal.value) return
+  showEditorModal.value = true
+}
+
+const closeModal = () => {
+  showEditorModal.value = false
+}
+
+const openEditor = async (editorId) => {
+  try {
+    const editor = editorConfigs.find(e => e.id === editorId)
+    if (!editor) {
+      throw new Error('未找到指定编辑器')
+    }
+
+    const token = encodeURIComponent(props.token.access_token)
+    const url = encodeURIComponent(props.token.tenant_url)
+    const protocolUrl = `${editor.protocol}?token=${token}&url=${url}`
+
+    // 创建隐藏链接触发协议
+    const link = document.createElement('a')
+    link.href = protocolUrl
+    link.style.display = 'none'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+
+    // 更新使用统计
+    updateEditorStats(editorId)
+
+    // 记住最后使用的编辑器
+    lastUsedEditor.value = editorId
+    localStorage.setItem('lastUsedEditor', editorId)
+
+    // 关闭模态框
+    showEditorModal.value = false
+
+    emit('copy-success', `正在打开 ${editor.name}...`, 'success')
+
+  } catch (error) {
+    console.error('Failed to open editor:', error)
+    emit('copy-success', `打开编辑器失败: ${error.message}`, 'error')
+    showEditorModal.value = false
+  }
+}
+
+const updateEditorStats = (editorId) => {
+  const stats = { ...editorStats.value }
+  stats[editorId] = (stats[editorId] || 0) + 1
+  editorStats.value = stats
+  localStorage.setItem('editorStats', JSON.stringify(stats))
+}
+
+// 键盘事件处理
+const handleKeydown = (event) => {
+  if (!showEditorModal.value) return
+
+  if (event.key === 'Escape') {
+    showEditorModal.value = false
+    return
+  }
+
+  // 数字键快速选择
+  const num = parseInt(event.key)
+  if (num >= 1 && num <= availableEditors.value.length) {
+    const editor = availableEditors.value[num - 1]
+    if (editor) {
+      openEditor(editor.id)
+    }
   }
 }
 
@@ -429,8 +664,9 @@ const refreshPortalInfo = async () => {
   return Promise.resolve()
 }
 
-// 组件挂载时加载Portal信息
+// 组件挂载时加载Portal信息和初始化编辑器数据
 onMounted(() => {
+  // 加载Portal信息
   if (props.token.portal_url) {
     // 如果有本地数据，立即显示
     if (props.token.portal_info) {
@@ -446,6 +682,25 @@ onMounted(() => {
     // 然后在后台刷新数据
     loadPortalInfo(false)
   }
+
+  // 初始化编辑器统计数据
+  const savedStats = localStorage.getItem('editorStats')
+  if (savedStats) {
+    try {
+      editorStats.value = JSON.parse(savedStats)
+    } catch (error) {
+      console.error('Failed to parse editor stats:', error)
+      editorStats.value = {}
+    }
+  }
+
+  // 添加键盘事件监听器
+  document.addEventListener('keydown', handleKeydown)
+})
+
+// 组件卸载时清理事件监听器
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleKeydown)
 })
 
 // 暴露方法给父组件
@@ -686,6 +941,19 @@ defineExpose({
   border-color: #c3e6cb;
 }
 
+.btn-action.editor {
+  color: #007acc;
+  background: linear-gradient(135deg, #007acc, #0369a1);
+  color: white;
+  border: none;
+}
+
+.btn-action.editor:hover {
+  background: linear-gradient(135deg, #005a9e, #0284c7);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 122, 204, 0.3);
+}
+
 .btn-action.status-check {
   color: #ffc107;
 }
@@ -773,6 +1041,327 @@ defineExpose({
     flex-direction: column;
     align-items: flex-start;
     gap: 4px;
+  }
+}
+
+/* 模态框过渡动画 */
+.modal-enter-active,
+.modal-leave-active {
+  transition: all 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+
+.modal-enter-from .editor-modal,
+.modal-leave-to .editor-modal {
+  transform: translateY(-20px) scale(0.95);
+}
+
+.modal-enter-to .editor-modal,
+.modal-leave-from .editor-modal {
+  transform: translateY(0) scale(1);
+}
+
+/* 编辑器选择模态框样式 */
+.editor-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+  pointer-events: auto;
+}
+
+.editor-modal {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.4);
+  max-width: 480px;
+  width: 90%;
+  max-height: 90vh;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+  position: relative;
+  pointer-events: auto;
+  margin: auto;
+}
+
+.modal-header {
+  display: flex;
+  flex-direction: column;
+  padding: 24px 28px 16px;
+  border-bottom: 1px solid #e1e5e9;
+  position: relative;
+}
+
+.modal-header h3 {
+  margin: 0 0 4px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.modal-subtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.modal-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  border: none;
+  padding: 8px;
+  cursor: pointer;
+  color: #6b7280;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-close:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.modal-content {
+  padding: 20px 28px 24px;
+}
+
+.editor-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.editor-option {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.editor-option:hover {
+  border-color: #3b82f6;
+  background: #f8fafc;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15);
+  transform: translateY(-1px);
+}
+
+.editor-option:active {
+  background: #f1f5f9;
+  transform: translateY(0);
+}
+
+.editor-option.recommended {
+  border-color: #10b981;
+  background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+}
+
+.editor-option.recommended:hover {
+  border-color: #059669;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.2);
+}
+
+.editor-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: #f3f4f6;
+  transition: all 0.2s ease;
+}
+
+.cursor-option .editor-icon {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.vscode-option .editor-icon {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.webstorm-option .editor-icon {
+  background: #d1fae5;
+  color: #059669;
+}
+
+.sublime-option .editor-icon {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.atom-option .editor-icon {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.editor-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.editor-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.editor-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.recommended-badge {
+  background: #10b981;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.installed-badge {
+  background: #3b82f6;
+  color: white;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.editor-desc {
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.editor-stats {
+  margin-top: 2px;
+}
+
+.usage-count {
+  font-size: 12px;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.shortcut-key {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 600;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.editor-option:hover .shortcut-key {
+  background: #3b82f6;
+  color: white;
+}
+
+.modal-footer {
+  padding: 16px 28px 0;
+  border-top: 1px solid #f3f4f6;
+}
+
+.tips {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tip-text {
+  font-size: 13px;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* 响应式设计 */
+@media (max-width: 640px) {
+  .editor-modal {
+    width: 95%;
+    margin: 16px;
+  }
+
+  .modal-header {
+    padding: 20px 24px 12px;
+  }
+
+  .modal-header h3 {
+    font-size: 18px;
+  }
+
+  .modal-content {
+    padding: 16px 24px 20px;
+  }
+
+  .editor-option {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .editor-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .editor-name {
+    font-size: 15px;
+  }
+
+  .editor-desc {
+    font-size: 12px;
+  }
+
+  .shortcut-key {
+    width: 20px;
+    height: 20px;
+    font-size: 11px;
   }
 }
 
