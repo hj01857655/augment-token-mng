@@ -2,10 +2,6 @@ import { ref, watch, computed } from 'vue'
 
 // 默认设置
 const defaultSettings = {
-  // 外观设置
-  theme: 'system', // 'light', 'dark', 'system'
-  language: 'zh-CN', // 'zh-CN', 'en-US'
-  
   // 通知设置
   notifications: {
     enabled: true,
@@ -13,35 +9,35 @@ const defaultSettings = {
     sound: false,
     duration: 5000
   },
-  
+
   // 编辑器设置
   editor: {
     defaultEditor: 'cursor',
     rememberLastUsed: true,
     showUsageStats: true
   },
-  
+
   // 安全设置
   security: {
     autoLock: false,
     lockTimeout: 300000, // 5分钟
     encryptStorage: false
   },
-  
+
   // 备份设置
   backup: {
     autoBackup: true,
     backupInterval: 86400000, // 24小时
     maxBackups: 10
   },
-  
+
   // 性能设置
   performance: {
     enableCache: true,
     cacheTimeout: 300000, // 5分钟
     maxCacheSize: 100
   },
-  
+
   // 高级设置
   advanced: {
     debugMode: false,
@@ -84,7 +80,7 @@ const saveSettings = () => {
 // 深度合并设置对象
 const mergeSettings = (defaults, saved) => {
   const result = { ...defaults }
-  
+
   for (const key in saved) {
     if (saved[key] !== null && typeof saved[key] === 'object' && !Array.isArray(saved[key])) {
       result[key] = mergeSettings(defaults[key] || {}, saved[key])
@@ -92,7 +88,7 @@ const mergeSettings = (defaults, saved) => {
       result[key] = saved[key]
     }
   }
-  
+
   return result
 }
 
@@ -114,7 +110,7 @@ const resetCategory = (category) => {
 const getSetting = (path) => {
   const keys = path.split('.')
   let value = settings.value
-  
+
   for (const key of keys) {
     if (value && typeof value === 'object' && key in value) {
       value = value[key]
@@ -122,7 +118,7 @@ const getSetting = (path) => {
       return undefined
     }
   }
-  
+
   return value
 }
 
@@ -131,14 +127,14 @@ const setSetting = (path, value) => {
   const keys = path.split('.')
   const lastKey = keys.pop()
   let target = settings.value
-  
+
   for (const key of keys) {
     if (!target[key] || typeof target[key] !== 'object') {
       target[key] = {}
     }
     target = target[key]
   }
-  
+
   target[lastKey] = value
   saveSettings()
 }
@@ -157,10 +153,10 @@ const exportSettings = () => {
     timestamp: new Date().toISOString(),
     settings: settings.value
   }
-  
+
   const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
-  
+
   const link = document.createElement('a')
   link.href = url
   link.download = `augment-settings-${new Date().toISOString().split('T')[0]}.json`
@@ -174,11 +170,11 @@ const exportSettings = () => {
 const importSettings = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
-    
+
     reader.onload = (e) => {
       try {
         const data = JSON.parse(e.target.result)
-        
+
         if (data.settings) {
           settings.value = mergeSettings(defaultSettings, data.settings)
           saveSettings()
@@ -190,7 +186,7 @@ const importSettings = (file) => {
         reject(error)
       }
     }
-    
+
     reader.onerror = () => reject(new Error('Failed to read file'))
     reader.readAsText(file)
   })
@@ -203,7 +199,7 @@ const validateSetting = (path, value) => {
   if (defaultValue !== undefined && typeof value !== typeof defaultValue) {
     return false
   }
-  
+
   // 特定设置的验证规则
   const validationRules = {
     'theme': (val) => ['light', 'dark', 'system'].includes(val),
@@ -216,7 +212,7 @@ const validateSetting = (path, value) => {
     'performance.maxCacheSize': (val) => val >= 10 && val <= 1000,
     'advanced.logLevel': (val) => ['debug', 'info', 'warn', 'error'].includes(val)
   }
-  
+
   const rule = validationRules[path]
   return rule ? rule(value) : true
 }
@@ -277,7 +273,7 @@ export function useSettings() {
     settings,
     isLoaded,
     settingsCategories,
-    
+
     // 方法
     loadSettings,
     saveSettings,
@@ -289,7 +285,7 @@ export function useSettings() {
     exportSettings,
     importSettings,
     validateSetting,
-    
+
     // 默认设置
     defaultSettings
   }
